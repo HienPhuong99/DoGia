@@ -298,7 +298,7 @@ const today = new Date(); today.setHours(0, 0, 0, 0);
 const S = { link: '', id: '', gid: '0', headers: [], rows: [], cols: [], role: {}, log: null,
   q: '', group: '', watchOnly: false, sortK: 'chg', sortDir: 1, rawJ: null, rawDir: 1, range: 30, watch: new Set(), items: [], open: null,
   cmp15Open: false, cmpPickOpen: false, cmpModel: '', cmp15Key: '', cmpDstKey: '', cmp15Fee: 'ext',
-  tamLive: { map: new Map(), at: 0, loading: false, err: false, synced: 0 } };
+  tamLive: { map: new Map(), at: 0, loading: false, err: false } };
 
 /* ---------- tiện ích ---------- */
 const $ = id => document.getElementById(id);
@@ -444,12 +444,10 @@ const at = (pts, D) => { let p = pts[0].p; for (const x of pts) { if (!x.t || x.
 function buildItems() {
   const R = S.role, LG = S.log, useLive = S.id === DEFAULT_ID && S.tamLive.map.size > 0;
   if (R.value == null) return [];
-  let synced = 0;
-  const list = S.rows.map(r => {
+  return S.rows.map(r => {
     const sheetV = num(r[R.value]); if (sheetV == null) return null;
     const lbl = rowLabel(r), tk = useLive ? tamItemKey(lbl) : null, live = tk ? S.tamLive.map.get(tk) : null;
     const v = live ? live.baseV : sheetV;
-    if (live && live.baseV !== sheetV) synced++;
     const o = R.cmp != null ? num(r[R.cmp]) : null, d = R.date != null ? date(r[R.date]) : null, key = textKey(r);
     const ev = LG?.map.get(LG.pairs.map(([m]) => norm((r[m] || '').trim())).join('|')) || [];
     const raw = [];
@@ -473,8 +471,6 @@ function buildItems() {
       liveUrl: live?.url || '', pts, lo: Math.min(...ps), hi: Math.max(...ps),
       mean: avg(ps), changes: pts.length - 1, lastT, est: pts[0].t === null, ev };
   }).filter(Boolean);
-  S.tamLive.synced = synced;
-  return list;
 }
 function periodStart() {
   if (S.range) return new Date(+today - S.range * DAY);
@@ -735,7 +731,6 @@ async function fetchTamLive(force) {
       L.map = map; L.at = Date.now(); L.err = false;
       if (S.id === DEFAULT_ID && S.rows.length) {
         S.items = buildItems();
-        if (S.lastLoad) updateStatus(S.lastLoad.time, S.lastLoad.auto);
         render();
       }
     } catch {
@@ -904,12 +899,6 @@ async function fetchSheet(ref, live) {
   return { text, log, time: new Date(), auto: false };
 }
 const fmtTime = d => `${d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} ngày ${fmtD(d)}`;
-function updateStatus(time, auto) {
-  const base = `${auto ? 'quét tự động lúc 10:00 sáng' : 'lấy trực tiếp từ Google Sheet'}`;
-  const liveNote = S.id === DEFAULT_ID && S.tamLive.at
-    ? ` · đồng bộ live tam300.com${S.tamLive.synced ? ` (${S.tamLive.synced} mẫu mới)` : ''}` : '';
-  $('status').innerHTML = `Cập nhật lúc <b>${fmtTime(time)}</b> · ${base}${liveNote}`;
-}
 async function load(link, live) {
   const ref = sheetRef(link);
   $('err').hidden = true;
@@ -922,7 +911,6 @@ async function load(link, live) {
     if (!all.length) throw 1;
     const same = live && S.link === link;
     S.headers = all[0]; S.rows = all.slice(1); S.link = link; S.id = ref.id; S.gid = ref.gid;
-    S.lastLoad = { time, auto };
     if (!same) {
       S.group = ''; S.q = ''; $('q').value = ''; S.watchOnly = false; S.rawJ = null; S.open = null;
       try { S.watch = new Set(JSON.parse(localStorage.getItem(`watch:${ref.id}:${ref.gid}`) || '[]')); } catch { S.watch = new Set(); }
@@ -932,7 +920,7 @@ async function load(link, live) {
     S.log = parseLog(log, text);
     S.items = buildItems();
     $('report').hidden = false;
-    updateStatus(time, auto);
+    $('status').innerHTML = `Cập nhật lúc <b>${fmtTime(time)}</b> · ${auto ? 'quét tự động lúc 10:00 sáng hằng ngày' : 'lấy trực tiếp từ Google Sheet'}`;
     if (!live) $('scanNote').textContent = auto
       ? 'Sheet này được quét giá tự động lúc 10:00 sáng mỗi ngày. Bấm “Cập nhật ngay” để lấy giá mới nhất bất cứ lúc nào.'
       : 'Sheet này chưa nằm trong danh sách quét tự động (file sheets.txt trong repo) — giá được lấy trực tiếp mỗi lần mở trang.';
