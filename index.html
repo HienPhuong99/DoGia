@@ -2,128 +2,223 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<script>try{const t=localStorage.getItem('theme'),g=localStorage.getItem('tint');if(t)document.documentElement.dataset.theme=t;if(g)document.documentElement.style.setProperty('--tint',g)}catch{}</script>
 <title>Theo dõi giá</title>
 <style>
-:root{--bg:#f4f4f2;--card:#fcfcfb;--text:#0b0b0b;--muted:#52514e;--faint:#8a8984;--line:#e4e3df;--track:#f0efec;--accent:#2a78d6;--down:#2a78d6;--up:#e34948;--down-bg:#e3eefb;--up-bg:#fde8e8;--warn-bg:#fef3c7;--warn:#92400e}
-@media (prefers-color-scheme:dark){:root{--bg:#111110;--card:#1a1a19;--text:#f0efec;--muted:#c3c2b7;--faint:#8f8e88;--line:#2e2e2c;--track:#383835;--accent:#3987e5;--down:#3987e5;--up:#e66767;--down-bg:#16304f;--up-bg:#4a1f1f;--warn-bg:#78350f;--warn:#fcd34d}}
+/* Liquid Glass (iOS 26/27): kính mờ trên nền màu, viền sáng phía trên + viền tối mảnh, chuyển động lò xo */
+:root{color-scheme:light;--tint:.35;
+--spring:linear(0,.009,.035 2.1%,.141,.281 6.7%,.723 12.9%,.938 16.7%,1.017,1.077,1.121,1.149 24.3%,1.159,1.163,1.161,1.154 29.9%,1.129 32.8%,1.051 39.6%,1.017 43.1%,.991,.977 51%,.974 53.8%,.975 57.1%,.997 69.8%,1.003 76.9%,1);--out:cubic-bezier(.2,.9,.25,1);
+--wall:#e8edf6;--b1:#7ec3ff;--b2:#c6a8ff;--b3:#ffb3c6;--b4:#9eeed3;
+--text:#0b0b0f;--muted:rgba(60,60,67,.74);--faint:rgba(60,60,67,.52);--line:rgba(60,60,67,.14);--track:rgba(120,120,128,.13);
+--accent:#007aff;--down:#0a6fe0;--up:#e5352b;--down-bg:rgba(0,122,255,.13);--up-bg:rgba(255,59,48,.13);--warn-bg:rgba(255,149,0,.18);--warn:#a85400;--star:#ff9f0a;
+--g:255 255 255;--ga:calc(.4 + var(--tint)*.5);--brd:rgba(255,255,255,.7);--edge:rgba(0,0,0,.09);--spec:rgba(255,255,255,.95);--glow:rgba(255,255,255,.55);
+--sh:0 8px 28px rgba(40,50,90,.12);--sh-s:0 2px 8px rgba(40,50,90,.1);--lens:rgba(255,255,255,.95);--solid:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--wall:#05060b;--b1:#1c48c9;--b2:#5f27c4;--b3:#a3185a;--b4:#0b6e5a;
+--text:#f5f5f7;--muted:rgba(235,235,245,.72);--faint:rgba(235,235,245,.46);--line:rgba(235,235,245,.12);--track:rgba(120,120,128,.24);
+--accent:#0a84ff;--down:#4aa3ff;--up:#ff6b61;--down-bg:rgba(10,132,255,.22);--up-bg:rgba(255,69,58,.22);--warn-bg:rgba(255,159,10,.2);--warn:#ffb340;
+--g:30 30 36;--ga:calc(.36 + var(--tint)*.52);--brd:rgba(255,255,255,.14);--edge:rgba(0,0,0,.6);--spec:rgba(255,255,255,.24);--glow:rgba(255,255,255,.1);
+--sh:0 10px 30px rgba(0,0,0,.45);--sh-s:0 2px 8px rgba(0,0,0,.35);--lens:rgba(120,120,128,.55);--solid:#1c1c1e}}
+:root[data-theme=dark]{color-scheme:dark;--wall:#05060b;--b1:#1c48c9;--b2:#5f27c4;--b3:#a3185a;--b4:#0b6e5a;
+--text:#f5f5f7;--muted:rgba(235,235,245,.72);--faint:rgba(235,235,245,.46);--line:rgba(235,235,245,.12);--track:rgba(120,120,128,.24);
+--accent:#0a84ff;--down:#4aa3ff;--up:#ff6b61;--down-bg:rgba(10,132,255,.22);--up-bg:rgba(255,69,58,.22);--warn-bg:rgba(255,159,10,.2);--warn:#ffb340;
+--g:30 30 36;--ga:calc(.36 + var(--tint)*.52);--brd:rgba(255,255,255,.14);--edge:rgba(0,0,0,.6);--spec:rgba(255,255,255,.24);--glow:rgba(255,255,255,.1);
+--sh:0 10px 30px rgba(0,0,0,.45);--sh-s:0 2px 8px rgba(0,0,0,.35);--lens:rgba(120,120,128,.55);--solid:#1c1c1e}
+
+.top::before,.kpi,.card,.tablewrap,details.src,.seg,.btn,.chip,input:not([type=range]),select,#tip,dialog{background:rgb(var(--g)/var(--ga));
+-webkit-backdrop-filter:blur(24px) saturate(1.8);backdrop-filter:blur(24px) saturate(1.8);border:1px solid var(--brd);
+box-shadow:inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge),var(--sh)}
+.seg,.btn,.chip,input:not([type=range]),select{box-shadow:inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge),var(--sh-s)}
+
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-main{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
-h1{font-size:22px;margin:0}
-h2{font-size:20px;margin:0}
-h3{font-size:14px;margin:0 0 10px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline}
+body{margin:0;min-height:100vh;background:var(--wall);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable","Segoe UI",system-ui,Roboto,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:-25%;z-index:-1;pointer-events:none;background:radial-gradient(36% 30% at 18% 14%,var(--b1),transparent 70%),radial-gradient(32% 28% at 84% 16%,var(--b2),transparent 70%),radial-gradient(40% 36% at 74% 86%,var(--b3),transparent 70%),radial-gradient(36% 34% at 10% 84%,var(--b4),transparent 70%);animation:drift 40s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate3d(5%,-4%,0) rotate(10deg) scale(1.06)}}
+main{max-width:1180px;margin:0 auto;padding:0 16px 48px}
+h1{font-size:30px;line-height:1.15;font-weight:700;letter-spacing:-.022em;margin:0;transition:font-size .45s var(--out)}
+h2{font-size:21px;letter-spacing:-.015em;margin:0}
+h3{font-size:15px;font-weight:600;letter-spacing:-.01em;margin:0 0 10px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center}
 h3 small{font-weight:400;color:var(--muted);font-size:12px}
 .sub{color:var(--muted);font-size:13px}
-.top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:end;margin-bottom:12px}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
+input,select{font:inherit;color:inherit;border-radius:14px;padding:9px 14px;min-width:0;outline:none}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input::placeholder{color:var(--faint)}
+.btn{border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px;white-space:nowrap;transition:scale .5s var(--spring),background .2s}
+.btn:active,.chip:active{scale:.93;transition-duration:.12s}
+.btn.tint{background:color-mix(in srgb,var(--accent) 88%,transparent);border-color:rgba(255,255,255,.35);color:#fff}
+.btn.icon{width:38px;height:38px;padding:0;font-size:17px;display:inline-grid;place-items:center}
+.btn:disabled{opacity:.6;cursor:wait}
+
+.top{position:sticky;top:max(10px,env(safe-area-inset-top));z-index:10;isolation:isolate;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 14px;margin:12px 0 14px;padding:14px 18px;border-radius:28px}
+.top::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;transition:background .3s}
+.scrolled .top{--ga:calc(.62 + var(--tint)*.33)}
+.scrolled h1{font-size:20px}
+.acts{display:flex;gap:8px;align-items:center}
+.upd{margin-top:2px}
+.upd b{color:var(--text);font-weight:600}
+
+.seg{position:relative;display:inline-flex;padding:3px;border-radius:999px}
+.seg button{position:relative;z-index:1;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;transition:color .25s,scale .5s var(--spring)}
+.seg button:active{scale:.92;transition-duration:.12s}
+.seg button[aria-pressed=true]{color:var(--text)}
+.lens{position:absolute;z-index:0;top:3px;bottom:3px;left:0;border-radius:999px;background:var(--lens);box-shadow:0 2px 10px rgba(0,0,0,.14),inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge);transition:translate .6s var(--spring),width .6s var(--spring)}
+.lens.jelly{animation:jelly .6s var(--spring)}
+@keyframes jelly{25%{scale:1.14 .84}}
+
+details.src{border-radius:22px;padding:12px 16px;margin-bottom:12px}
+details.src summary{cursor:pointer;font-size:14px;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.src summary::-webkit-details-marker{display:none}
+details.src summary::after{content:"›";font-size:20px;line-height:1;color:var(--muted);transition:rotate .5s var(--spring)}
+details.src[open] summary::after{rotate:90deg}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-input,select,button{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:0}
-button{cursor:pointer}
-button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-details.src{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:12px}
-details.src summary{cursor:pointer;font-size:14px;font-weight:600}
 details.src .row{margin-top:10px}
 details.src input[type=url]{flex:1 1 320px}
-label.sel{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:2px;flex:1 1 150px}
-.linkbtn{background:none;border:0;color:var(--accent);padding:0;font-size:13px;text-decoration:underline}
-.warn{background:var(--warn-bg);color:var(--warn);padding:10px 12px;border-radius:8px;font-size:14px;margin:8px 0}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card)}
-.seg button{white-space:nowrap;border:0;border-radius:0;padding:6px 12px;font-size:13px}
-.seg button[aria-pressed=true]{background:var(--accent);color:#fff}
-.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
-.filters input{flex:1 1 200px}
-.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
-.chip{flex-shrink:0;white-space:nowrap;border-radius:999px;padding:5px 12px;font-size:13px}
-.chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+label.sel{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:4px;flex:1 1 150px}
+label.sel input{flex:none}
+input[type=range]{accent-color:var(--accent);padding:0;margin:8px 0}
+.linkbtn{color:var(--accent);font-size:13px}
+.warn{background:var(--warn-bg);color:var(--warn);padding:10px 14px;border-radius:16px;font-size:14px;margin:8px 0;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+
+.filters{display:flex;gap:8px;margin-bottom:10px}
+.filters input{flex:1 1 200px;border-radius:999px;padding:10px 16px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 8px;margin:0 -2px 6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;white-space:nowrap;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:500;transition:scale .5s var(--spring),background .25s,color .25s}
+.chip[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 88%,transparent);color:#fff;border-color:rgba(255,255,255,.3)}
+
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin-bottom:12px}
-.kpi,.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
-.kpi b{display:block;font-size:21px;font-variant-numeric:tabular-nums;margin:2px 0}
-.kpi span{font-size:12px;color:var(--muted)}
+.kpi,.card{position:relative;border-radius:24px;padding:14px 16px;min-width:0}
+.kpi::before,.card::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background:radial-gradient(380px circle at var(--mx,15%) var(--my,-40%),var(--glow),transparent 55%)}
+.kpi b{display:block;font-size:24px;font-weight:700;letter-spacing:-.02em;margin:2px 0}
+.kpi span{display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:10px;margin-bottom:12px}
 .wide{grid-column:1/-1}
-.chart{position:relative;width:100%}
+.intro .kpi,.intro .card,.intro .tablewrap{animation:rise .8s var(--spring) both;animation-delay:calc(var(--i,4)*50ms)}
+@keyframes rise{from{opacity:0;translate:0 18px;scale:.97}}
+
+.chart{position:relative;width:100%;touch-action:pan-y}
 .chart svg{display:block;width:100%}
 .chart text{font-size:11px;fill:var(--faint)}
 .chart .grid-l{stroke:var(--line)}
 .chart .ln{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round}
 .chart .est{stroke-dasharray:4 4}
-.chart .dot{fill:var(--accent);stroke:var(--card);stroke-width:2}
+.chart .dot{fill:var(--accent);stroke:var(--solid);stroke-width:2}
 .chart .cross{stroke:var(--muted);stroke-dasharray:3 3}
-#tip{position:fixed;pointer-events:none;background:var(--text);color:var(--bg);font-size:12px;padding:5px 8px;border-radius:6px;white-space:nowrap;z-index:20;display:none}
-.bar{display:grid;grid-template-columns:minmax(0,40%) 1fr auto;gap:10px;align-items:center;padding:3px 0;font-size:13px}
+#tip{position:fixed;pointer-events:none;color:var(--text);font-size:12px;font-weight:500;padding:6px 10px;border-radius:12px;white-space:nowrap;z-index:30;display:none;--ga:.78}
+.bar{display:grid;grid-template-columns:minmax(0,40%) 1fr auto;gap:10px;align-items:center;padding:4px 6px;margin:0 -6px;border-radius:10px;font-size:13px}
 .bar:hover{background:var(--track)}
 .bar.me{font-weight:700}
 .bl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bt{height:14px}
-.bt i{display:block;height:100%;min-width:2px;background:var(--accent);border-radius:0 4px 4px 0}
+.bt{height:12px}
+.bt i{display:block;height:100%;min-width:3px;background:var(--accent);border-radius:0 4px 4px 0}
+.intro .bt i{animation:grow 1s var(--out) both .2s}
+@keyframes grow{from{width:0}}
 .bv{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
 .more{font-size:12px;color:var(--muted);margin-top:6px}
-.mv{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px;cursor:pointer}
+.mv{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px;margin:0 -8px;border-radius:14px;border-bottom:.5px solid var(--line);font-size:14px;cursor:pointer;transition:background .2s,scale .5s var(--spring)}
 .mv:last-child{border-bottom:0}
-.mv:hover .ml{text-decoration:underline}
+.mv:hover{background:var(--track)}
+.mv:active{scale:.98;transition-duration:.12s}
 .ml{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.chg{display:inline-block;font-size:12px;font-weight:600;padding:2px 7px;border-radius:6px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.n s{color:var(--faint);font-size:12px}
+.chg{display:inline-block;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;white-space:nowrap;font-variant-numeric:tabular-nums}
 .chg.down{background:var(--down-bg);color:var(--down)}
 .chg.up{background:var(--up-bg);color:var(--up)}
 .chg.flat{color:var(--faint)}
-.tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.feed{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));column-gap:28px}
+.feed .mv:last-child{border-bottom:.5px solid var(--line)}
+.feed a{text-decoration:none}
+.tablewrap{overflow-x:auto;border-radius:24px}
 table{width:100%;border-collapse:collapse}
-th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:middle}
-th{font-size:12px;color:var(--muted);font-weight:600;cursor:pointer;user-select:none;background:var(--card)}
+th,td{padding:10px 14px;text-align:left;border-bottom:.5px solid var(--line);white-space:nowrap;vertical-align:middle}
+th{font-size:12px;color:var(--muted);font-weight:600;cursor:pointer;user-select:none}
 th.n{text-align:right}
 tr:last-child td{border-bottom:0}
-#track tbody tr{cursor:pointer}
+#track tbody tr{cursor:pointer;transition:background .2s}
 #track tbody tr:hover{background:var(--track)}
-.upd{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:4px}
-.upd b{color:var(--text)}
-#refresh{font-size:13px;padding:5px 12px;border-color:var(--accent);color:var(--accent);font-weight:600}
-#refresh:disabled{opacity:.6;cursor:wait}
 .pname{font-weight:600}
 .pcell{white-space:normal;min-width:150px}
 .show-m{display:none;margin-top:3px}
-@media (max-width:640px){#track th,#track td{padding:8px 6px}.show-m{display:block}.pcell{min-width:0}}
 .pgrp{font-size:12px;color:var(--muted)}
-.star{background:none;border:0;padding:0 4px;font-size:18px;color:var(--faint);line-height:1}
-.star[aria-pressed=true]{color:#eda100}
+.star{padding:0 4px;font-size:19px;color:var(--faint);line-height:1;transition:scale .5s var(--spring),color .2s}
+.star:active{scale:.7;transition-duration:.1s}
+.star[aria-pressed=true]{color:var(--star)}
 .spark{display:block}
 .spark.down{color:var(--down)} .spark.up{color:var(--up)} .spark.flat{color:var(--faint)}
 .rng{position:relative;display:block;width:110px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--down-bg),var(--track),var(--up-bg))}
-.rng i{position:absolute;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--accent);border:2px solid var(--card)}
+.rng i{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 0 .5px rgba(0,0,0,.1)}
 .rng.big{width:100%;height:8px;margin:14px 0 4px}
 .rng-l{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
-.new{font-size:11px;background:var(--warn-bg);color:var(--warn);border-radius:999px;padding:1px 6px;margin-left:6px;font-weight:600}
-.verdict{display:inline-block;font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--track)}
+.new{font-size:11px;background:var(--warn-bg);color:var(--warn);border-radius:999px;padding:1px 7px;margin-left:6px;font-weight:600}
+.verdict{display:inline-block;font-size:13px;font-weight:600;padding:4px 11px;border-radius:999px;background:var(--track)}
 .verdict.down{background:var(--down-bg);color:var(--down)} .verdict.up{background:var(--up-bg);color:var(--up)}
-dialog{border:0;border-radius:16px;padding:0;width:min(760px,calc(100% - 24px));max-height:calc(100% - 24px);background:var(--bg);color:var(--text)}
-dialog::backdrop{background:rgba(0,0,0,.45)}
-.dlg{padding:18px}
+
+dialog{padding:0;width:min(760px,calc(100% - 24px));max-height:calc(100% - 24px);border-radius:34px;color:var(--text);--ga:calc(.55 + var(--tint)*.4);overscroll-behavior:contain}
+dialog[open]{animation:pop .55s var(--spring)}
+@keyframes pop{from{opacity:0;scale:.92;translate:0 24px}}
+dialog::backdrop{background:rgba(0,0,0,.22);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.dlg{padding:20px}
 .dlg-h{display:flex;justify-content:space-between;gap:12px;align-items:start;margin-bottom:10px}
-.big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;margin:6px 0}
+.big{font-size:34px;font-weight:700;letter-spacing:-.025em;margin:6px 0}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:12px 0}
-.stats div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.stats div{background:var(--track);border-radius:16px;padding:9px 12px}
 .stats span{display:block;font-size:12px;color:var(--muted)}
 .stats b{font-variant-numeric:tabular-nums}
-.ev{display:grid;grid-template-columns:110px 1fr auto;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+.ev{display:grid;grid-template-columns:110px 1fr auto;gap:8px;padding:8px 0;border-bottom:.5px solid var(--line);font-size:14px}
 .ev:last-child{border-bottom:0}
 details.raw summary{cursor:pointer;font-weight:600;margin:16px 0 8px}
-@media (max-width:640px){.hide-m{display:none}.ev{grid-template-columns:1fr auto}.ev span:first-child{grid-column:1/-1;color:var(--muted);font-size:12px}.bar{grid-template-columns:1fr auto}.bl{grid-column:1/-1}.kpi b{font-size:18px}}
+
+@media (max-width:640px){
+main{padding:0 12px calc(96px + env(safe-area-inset-bottom))}
+.top{top:max(8px,env(safe-area-inset-top));margin:8px 0 12px;padding:12px 14px;border-radius:24px}
+.top{flex-wrap:nowrap;align-items:flex-start}
+h1{font-size:26px} .scrolled h1{font-size:18px} .scrolled .upd{display:none}
+#refresh{width:38px;height:38px;padding:0;font-size:0;display:inline-grid;place-items:center}
+#refresh::before{content:"⟳";font-size:19px}
+.mv{grid-template-columns:1fr auto;row-gap:4px}.mv .ml{grid-column:1/-1;white-space:normal}
+#range{position:fixed;z-index:20;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));translate:-50% 0;padding:4px;box-shadow:inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge),0 12px 32px rgba(0,0,0,.22)}
+#range button{padding:10px 15px;font-size:14px}
+#range .lens{top:4px;bottom:4px}
+.kpis{grid-template-columns:1fr 1fr;gap:8px}
+.kpi{padding:12px 14px;border-radius:20px} .kpi b{font-size:19px}
+.card{padding:14px;border-radius:22px}
+#track th,#track td{padding:9px 8px}
+.show-m{display:block} .pcell{min-width:0} .hide-m{display:none}
+.ev{grid-template-columns:1fr auto}.ev span:first-child{grid-column:1/-1;color:var(--muted);font-size:12px}
+.bar{grid-template-columns:1fr auto}.bl{grid-column:1/-1}
+dialog{width:100%;max-width:100%;max-height:92dvh;margin:auto 0 0;border-radius:30px 30px 0 0;border-bottom:0}
+dialog[open]{animation:sheet .5s var(--out)}
+.dlg{padding:10px 16px calc(20px + env(safe-area-inset-bottom))}
+.dlg::before{content:"";display:block;width:38px;height:5px;border-radius:3px;background:var(--faint);opacity:.6;margin:0 auto 10px}
+.big{font-size:30px}
+}
+@keyframes sheet{from{translate:0 100%}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+@media (prefers-reduced-transparency:reduce){:root{--tint:1!important}}
 </style>
 </head>
 <body>
 <main>
-  <div class="top">
+  <header class="top">
     <div><h1 id="title">Theo dõi giá</h1>
-      <div class="upd"><span class="sub" id="status">Đang tải…</span><button type="button" id="refresh">⟳ Cập nhật ngay</button></div></div>
-    <div class="seg" id="range" role="group" aria-label="Khoảng thời gian"></div>
-  </div>
+      <div class="upd sub" id="status">Đang tải…</div></div>
+    <div class="acts">
+      <div class="seg" id="range" role="group" aria-label="Khoảng thời gian"></div>
+      <button type="button" class="btn tint" id="refresh">⟳ Cập nhật ngay</button>
+      <button type="button" class="btn icon" id="theme" aria-label="Đổi giao diện sáng / tối">◐</button>
+    </div>
+  </header>
 
   <details class="src" id="src">
     <summary>Nguồn dữ liệu &amp; tuỳ chỉnh</summary>
     <form class="row" id="form">
       <input id="link" type="url" placeholder="Dán link Google Sheet (đã chia sẻ “Bất kỳ ai có đường liên kết”)" aria-label="Link Google Sheet" required>
-      <button class="primary" type="submit">Xem báo cáo</button>
+      <button class="btn tint" type="submit">Xem báo cáo</button>
       <button type="button" class="linkbtn" id="reset">Dùng link mặc định</button>
     </form>
     <div class="row">
@@ -131,6 +226,7 @@ details.raw summary{cursor:pointer;font-weight:600;margin:16px 0 8px}
       <label class="sel">Giá cũ (để so sánh)<select id="r-cmp"></select></label>
       <label class="sel">Nhóm theo<select id="r-group"></select></label>
       <label class="sel">Ngày cập nhật<select id="r-date"></select></label>
+      <label class="sel">Độ trong của kính<input type="range" id="tint" min="0" max="1" step="0.05" aria-label="Độ trong của kính: trái trong suốt, phải mờ đục"></label>
     </div>
     <div class="sub" id="scanNote" style="margin-top:8px"></div>
   </details>
@@ -144,6 +240,7 @@ details.raw summary{cursor:pointer;font-weight:600;margin:16px 0 8px}
     <div class="kpis" id="kpis"></div>
     <div id="track-area">
       <div class="grid">
+        <section class="card wide" id="feedCard" hidden><h3>Biến động giá gần đây <small id="feedNote"></small></h3><div class="feed" id="feed"></div></section>
         <section class="card wide"><h3><span id="idxTitle">Chỉ số giá trung bình</span><small id="idxNote"></small></h3><div class="chart" id="idxChart" data-h="220"></div></section>
         <section class="card"><h3>Giảm giá mạnh nhất <small id="periodA"></small></h3><div id="moversDown"></div></section>
         <section class="card"><h3>Tăng giá mạnh nhất <small id="periodB"></small></h3><div id="moversUp"></div></section>
@@ -164,9 +261,9 @@ details.raw summary{cursor:pointer;font-weight:600;margin:16px 0 8px}
 <script>
 const DEFAULT_LINK = 'https://docs.google.com/spreadsheets/d/1pXlE41ArlhpHfkVwq83HpsHe2Y5-L6EhdHxBrqOkNdY/edit?gid=0';
 const RANGES = [[7, '7 ngày'], [30, '30 ngày'], [90, '90 ngày'], [0, 'Tất cả']];
-const DAY = 864e5, TOP = 15, NEW_DAYS = 3;
+const DAY = 864e5, TOP = 15, NEW_DAYS = 3, LOG_TAB = 'Biến động';
 const today = new Date(); today.setHours(0, 0, 0, 0);
-const S = { link: '', id: '', gid: '0', headers: [], rows: [], cols: [], role: {},
+const S = { link: '', id: '', gid: '0', headers: [], rows: [], cols: [], role: {}, log: null,
   q: '', group: '', watchOnly: false, sortK: 'chg', sortDir: 1, rawJ: null, rawDir: 1, range: 30, watch: new Set(), items: [], open: null };
 
 /* ---------- tiện ích ---------- */
@@ -217,7 +314,7 @@ function sheetRef(link) {
   link = link.trim();
   const gid = (link.match(/[#&?]gid=(\d+)/) || [])[1] || '0';
   let m = link.match(/\/spreadsheets\/d\/e\/([\w-]+)/); // link "Xuất bản lên web"
-  if (m) return { id: m[1], gid, csv: `https://docs.google.com/spreadsheets/d/e/${m[1]}/pub?output=csv&gid=${gid}` };
+  if (m) return { id: m[1], gid, pub: true, csv: `https://docs.google.com/spreadsheets/d/e/${m[1]}/pub?output=csv&gid=${gid}` };
   m = link.match(/\/spreadsheets\/d\/([\w-]+)/) || link.match(/^([\w-]{25,})$/);
   return m ? { id: m[1], gid, csv: `https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=out:csv&headers=1&gid=${gid}` } : null;
 }
@@ -247,24 +344,49 @@ const colName = j => S.cols.find(c => c.j === j)?.name || '';
 const textKey = r => S.cols.filter(c => c.type === 'text').map(c => (r[c.j] || '').trim()).join(' | ');
 const rowLabel = r => S.cols.filter(c => c.type === 'text' && c.j !== S.role.group).map(c => (r[c.j] || '').trim()).filter(Boolean).join(' · ') || textKey(r) || '—';
 
+/* ---------- tab "Biến động": mỗi dòng là một lần đổi giá (Gemini ghi mỗi sáng) ---------- */
+// Ghép với tab chính qua các cột mô tả trùng tên (Model, Dung lượng, Tình trạng…).
+function parseLog(text, mainText) {
+  if (!text || text === mainText) return null; // sheet không có tab này thì Google trả về tab đầu
+  const all = parseCSV(text), h = (all[0] || []).map(s => s.trim()), f = re => h.findIndex(x => re.test(x));
+  const L = { t: f(/^ngày/i), cu: f(/giá cũ/i), p: f(/giá mới/i), src: f(/nguồn/i) };
+  if (L.t < 0 || L.p < 0) return null;
+  const pairs = h.map((n, j) => [S.cols.find(c => c.type === 'text' && norm(c.name) === norm(n))?.j, j])
+    .filter(([m, j]) => m != null && !Object.values(L).includes(j));
+  if (!pairs.length) return null;
+  const map = new Map();
+  for (const r of all.slice(1)) {
+    const t = date(r[L.t]), p = num(r[L.p]); if (!t || p == null) continue;
+    const k = pairs.map(([, j]) => norm((r[j] || '').trim())).join('|');
+    (map.get(k) || map.set(k, []).get(k)).push({ t, p, cu: L.cu >= 0 ? num(r[L.cu]) : null, src: L.src >= 0 ? (r[L.src] || '').trim() : '' });
+  }
+  map.forEach(a => a.sort((x, y) => x.t - y.t));
+  return { pairs, map };
+}
+
 /* ---------- dựng chuỗi giá theo thời gian cho từng sản phẩm ---------- */
-// Nguồn: cột giá cũ + ngày cập nhật trong sheet, và giá hiện tại.
-// Điểm t=null là "giá trước lần đổi gần nhất", không rõ từ ngày nào -> vẽ nét đứt.
+// Nguồn: tab "Biến động" nếu có; không thì cột giá cũ + ngày cập nhật, và giá hiện tại.
+// Điểm t=null là "giá trước lần đổi đầu tiên đã ghi", không rõ từ ngày nào -> vẽ nét đứt.
 const at = (pts, D) => { let p = pts[0].p; for (const x of pts) { if (!x.t || x.t <= D) p = x.p; else break; } return p; };
 function buildItems() {
-  const R = S.role; if (R.value == null) return [];
+  const R = S.role, LG = S.log; if (R.value == null) return [];
   return S.rows.map(r => {
     const v = num(r[R.value]); if (v == null) return null;
     const o = R.cmp != null ? num(r[R.cmp]) : null, d = R.date != null ? date(r[R.date]) : null, key = textKey(r);
+    const ev = LG?.map.get(LG.pairs.map(([m]) => norm((r[m] || '').trim())).join('|')) || [];
     const raw = [];
-    if (o != null && o !== v) raw.push({ t: null, p: o }, { t: d || today, p: v }); else raw.push({ t: d, p: v });
+    if (ev.length) {
+      const last = ev[ev.length - 1];
+      raw.push({ t: null, p: ev[0].cu ?? ev[0].p }, ...ev.map(e => ({ t: e.t, p: e.p })));
+      if (last.p !== v) raw.push({ t: d && d > last.t ? d : today, p: v }); // sửa tay trong sheet mà chưa ghi biến động
+    } else if (o != null && o !== v) raw.push({ t: null, p: o }, { t: d || today, p: v }); else raw.push({ t: d, p: v });
     raw.push({ t: today, p: v });
     raw.sort((a, b) => (a.t ? +a.t : -Infinity) - (b.t ? +b.t : -Infinity));
     const pts = raw.filter((x, i) => i === 0 || x.p !== raw[i - 1].p);
     const ps = pts.map(x => x.p);
     const lastT = pts.length > 1 ? pts[pts.length - 1].t : d;
     return { r, key, label: rowLabel(r), group: R.group != null ? r[R.group] : '', v, pts, lo: Math.min(...ps), hi: Math.max(...ps),
-      mean: avg(ps), changes: pts.length - 1, lastT, est: pts[0].t === null };
+      mean: avg(ps), changes: pts.length - 1, lastT, est: pts[0].t === null, ev };
   }).filter(Boolean);
 }
 function periodStart() {
@@ -292,6 +414,8 @@ function drawLine(el, s, t0, opts = {}) {
   const yt = [lo + pad, (lo + hi) / 2, hi - pad], xt = [T0, (T0 + T1) / 2, T1];
   const estEnd = opts.estUntil ? X(+opts.estUntil) : null;
   el.innerHTML = `<svg width="${W}" height="${H}" role="img" aria-label="${esc(opts.label || 'Biểu đồ giá')}">
+    <defs><linearGradient id="g-${el.id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--accent);stop-opacity:.28"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:0"/></linearGradient></defs>
+    <path d="${d}V${H - P.b}H${X(+s[0].t)}Z" fill="url(#g-${el.id})"/>
     ${yt.map(v => `<line class="grid-l" x1="${P.l}" x2="${W - P.r}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${P.l - 6}" y="${Y(v) + 4}" text-anchor="end">${fmtC(v)}</text>`).join('')}
     ${xt.map((t, i) => `<text x="${X(t)}" y="${H - 6}" text-anchor="${['start', 'middle', 'end'][i]}">${fmtDs(new Date(t))}</text>`).join('')}
     ${estEnd ? `<clipPath id="c-${el.id}"><rect x="0" y="0" width="${estEnd}" height="${H}"/></clipPath><clipPath id="d-${el.id}"><rect x="${estEnd}" y="0" width="${W}" height="${H}"/></clipPath>
@@ -299,14 +423,19 @@ function drawLine(el, s, t0, opts = {}) {
     ${s.slice(1).map(x => `<circle class="dot" r="4" cx="${X(+x.t)}" cy="${Y(x.p)}"/>`).join('')}
     <circle class="dot" r="4" cx="${X(T1)}" cy="${Y(s[s.length - 1].p)}"/>
     <line class="cross" y1="${P.t}" y2="${H - P.b}" x1="-9" x2="-9"/></svg>`;
-  const cross = el.querySelector('.cross'), tip = $('tip');
+  // Hộp tooltip phải nằm trong <dialog> thì mới hiện trên cửa sổ chi tiết; dialog kính mờ là khung toạ độ của nó.
+  const cross = el.querySelector('.cross'), tip = $('tip'), host = el.closest('dialog') || document.body;
+  if (tip.parentNode !== host) host.append(tip);
   el.onpointermove = e => {
     const x = e.clientX - el.getBoundingClientRect().left, t = T0 + (x - P.l) / (W - P.l - P.r) * span;
     if (t < T0 || t > T1 + DAY / 2) { el.onpointerleave(); return; }
     let p = s[0].p; for (const q of s) if (+q.t <= t) p = q.p;
     cross.setAttribute('x1', x); cross.setAttribute('x2', x);
     tip.textContent = `${fmtD(new Date(Math.min(t, T1)))}: ${fmt(Math.round(p))}`;
-    tip.style.display = 'block'; tip.style.left = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8) + 'px'; tip.style.top = e.clientY - 34 + 'px';
+    tip.style.display = 'block';
+    const o = host === document.body ? { left: 0, top: 0 } : host.getBoundingClientRect();
+    tip.style.left = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8) - o.left + host.scrollLeft * (host !== document.body) + 'px';
+    tip.style.top = e.clientY - 40 - o.top + host.scrollTop * (host !== document.body) + 'px';
   };
   el.onpointerleave = () => { tip.style.display = 'none'; cross.setAttribute('x1', -9); cross.setAttribute('x2', -9); };
 }
@@ -324,6 +453,19 @@ const bars = (title, data, note = '', sub = '') => `<h3>${esc(title)}${sub ? `<s
     <span class="bt"><i style="width:${d.pct}%"></i></span><span class="bv">${d.html || esc(d.text)}</span></div>`).join('')
 }${note ? `<div class="more">${esc(note)}</div>` : ''}`;
 const scale = (data, key) => { const m = Math.max(...data.map(d => Math.abs(d[key]))) || 1; data.forEach(d => d.pct = Math.abs(d[key]) / m * 100); return data; };
+// Nút chọn kiểu iOS: viên kính trượt từ vị trí cũ sang nút đang chọn, nảy nhẹ khi đổi.
+const lensAt = {};
+function seg(el) {
+  const b = el?.querySelector('[aria-pressed=true]'); if (!b) return;
+  el.insertAdjacentHTML('afterbegin', '<i class="lens" aria-hidden="true"></i>');
+  const l = el.firstChild, to = { x: b.offsetLeft, w: b.offsetWidth }, from = lensAt[el.id] || to;
+  l.style.transition = 'none'; l.style.translate = from.x + 'px'; l.style.width = from.w + 'px';
+  l.offsetWidth; l.style.transition = '';
+  l.style.translate = to.x + 'px'; l.style.width = to.w + 'px';
+  if (from.x !== to.x) l.classList.add('jelly');
+  lensAt[el.id] = to;
+}
+const hostOf = s => { try { return new URL(s).hostname.replace(/^www\./, ''); } catch { return ''; } };
 function niceStep(range, n) { const raw = range / n, p = 10 ** Math.floor(Math.log10(raw || 1)); return [1, 2, 2.5, 5, 10].map(m => m * p).find(s => s >= raw); }
 
 /* ---------- vẽ báo cáo ---------- */
@@ -346,6 +488,7 @@ function render() {
   renderKpis(rows, items);
   if (S.items.length) renderTracking(items, t0);
   renderRaw(rows);
+  seg($('range'));
   if (S.open) openDetail(S.open, true);
 }
 function renderKpis(rows, items) {
@@ -362,10 +505,22 @@ function renderKpis(rows, items) {
     const lastT = items.map(i => i.lastT).filter(Boolean).sort((a, b) => b - a)[0];
     if (lastT) k.push(['Đổi giá gần nhất', fmtD(lastT), `${items.filter(i => i.lastT && +i.lastT === +lastT).length} mẫu · ${ago(lastT)}`]);
   } else k.push(['Số dòng', fmt(rows.length), S.group || 'toàn bộ dữ liệu']);
-  $('kpis').innerHTML = k.map(([t, b, s]) => `<div class="kpi"><span>${esc(t)}</span><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join('');
+  $('kpis').innerHTML = k.map(([t, b, s], n) => `<div class="kpi" style="--i:${n}"><span>${esc(t)}</span><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join('');
 }
 function renderTracking(items, t0) {
   const R = S.role, vName = colName(R.value);
+  // Biến động gần đây (tab "Biến động")
+  $('feedCard').hidden = !S.log;
+  if (S.log) {
+    const feed = items.flatMap(i => i.ev.map((e, k) => ({ ...e, i, prev: k ? i.ev[k - 1].p : e.cu }))).sort((a, b) => b.t - a.t);
+    const nToday = feed.filter(e => +e.t === +today).length;
+    $('feedNote').textContent = `${feed.length} lần đổi giá đã ghi${nToday ? ` · ${nToday} hôm nay` : ''} · tab “${LOG_TAB}”`;
+    $('feed').innerHTML = feed.slice(0, 8).map(e => {
+      const h = hostOf(e.src), src = h ? `<a href="${esc(e.src)}" target="_blank" rel="noopener">${esc(h)}</a>` : esc(e.src);
+      return `<div class="mv" data-k="${esc(e.i.key)}"><span class="ml">${esc(e.i.label)}<div class="pgrp">${fmtD(e.t)} · ${ago(e.t)}${src ? ' · ' + src : ''}</div></span>
+        <span class="n">${e.prev != null ? `<s>${fmtC(e.prev)}</s> ` : ''}<b>${fmt(e.p)}</b></span>${e.prev != null ? chg(e.p - e.prev, e.prev) : '<span></span>'}</div>`;
+    }).join('') || '<div class="sub">Chưa có lần đổi giá nào khớp bộ lọc</div>';
+  }
   // Chỉ số giá trung bình theo thời gian
   const ds = [...new Set(items.flatMap(i => i.pts.map(x => x.t)).filter(t => t && t > t0).map(Number))].sort((a, b) => a - b);
   const idx = [+t0, ...ds].map(t => ({ t: new Date(t), p: avg(items.map(i => at(i.pts, new Date(t)))) }));
@@ -439,7 +594,7 @@ function openDetail(key, refresh) {
     : i.v >= i.hi ? ['up', 'Giá cao nhất từng ghi nhận'] : i.v < i.mean ? ['down', `Thấp hơn mức trung bình ${pct((i.v - i.mean) / i.mean)}`] : ['up', `Cao hơn mức trung bình ${pct((i.v - i.mean) / i.mean)}`];
   const ev = i.pts.map((x, k) => ({ ...x, prev: k ? i.pts[k - 1].p : null })).reverse();
   $('dlgBody').innerHTML = `<div class="dlg-h"><div><div class="pgrp">${esc(i.group)}</div><h2>${esc(i.label)}</h2></div>
-      <button type="button" id="dlgClose" aria-label="Đóng">✕</button></div>
+      <button type="button" class="btn icon" id="dlgClose" aria-label="Đóng">✕</button></div>
     <div class="big">${fmt(i.v)}</div>
     <div class="row">${chg(i.chg, i.base)} <span class="verdict ${verdict[0]}">${verdict[1]}</span></div>
     <div class="stats"><div><span>Thấp nhất</span><b>${fmt(i.lo)}</b></div><div><span>Cao nhất</span><b>${fmt(i.hi)}</b></div>
@@ -449,7 +604,7 @@ function openDetail(key, refresh) {
     <section class="card" style="margin-top:12px"><h3>Lịch sử giá <span class="seg" id="dlgRange">${RANGES.map(([d, t]) =>
       `<button type="button" data-r="${d}" aria-pressed="${d === S.range}">${t}</button>`).join('')}</span></h3>
       <div class="chart" id="dlgChart" data-h="200"></div>
-      ${i.est ? '<div class="more">Nét đứt: giá trước lần đổi gần nhất (lấy từ cột giá cũ, không rõ áp dụng từ ngày nào).</div>' : ''}</section>
+      ${i.est ? '<div class="more">Nét đứt: giá trước lần đổi đầu tiên đã ghi nhận (không rõ áp dụng từ ngày nào).</div>' : ''}</section>
     <section class="card" style="margin-top:10px"><h3>Các lần thay đổi giá</h3>${ev.map(x => `<div class="ev"><span>${x.t ? fmtD(x.t) : 'Trước đó'}</span>
       <span class="n" style="text-align:left">${x.prev != null ? `${fmt(x.prev)} → ` : ''}<b>${fmt(x.p)}</b></span>${x.prev != null ? chg(x.p - x.prev, x.prev) : '<span class="sub">giá ban đầu</span>'}</div>`).join('')}</section>
     ${sameGrp.length > 1 ? `<section class="card" style="margin-top:10px">${bars(`Cùng nhóm: ${i.group}`, scale(sameGrp.sort((a, b) => b.v - a.v)
@@ -457,6 +612,7 @@ function openDetail(key, refresh) {
   if (!refresh || !$('dlg').open) $('dlg').showModal();
   const est = i.est ? (i.pts.find(x => x.t)?.t || today) : null;
   drawLine($('dlgChart'), series(i.pts, t0), t0, { label: 'Lịch sử giá ' + i.label, estUntil: est && est > t0 ? est : null });
+  seg($('dlgRange'));
 }
 
 /* ---------- tải dữ liệu ---------- */
@@ -464,12 +620,12 @@ function openDetail(key, refresh) {
 async function fetchSheet(ref, live) {
   if (!live) try {
     const res = await fetch(`data/${ref.id}_${ref.gid}.json?_=${Date.now()}`);
-    if (res.ok) { const j = await res.json(); return { text: j.csv, time: new Date(j.time), auto: true }; }
+    if (res.ok) { const j = await res.json(); return { text: j.csv, log: j.log, time: new Date(j.time), auto: true }; }
   } catch { }
-  const res = await fetch(ref.csv + '&_=' + Date.now());
-  const text = await res.text();
-  if (!res.ok || /^\s*</.test(text)) throw 0;
-  return { text, time: new Date(), auto: false };
+  const get = u => fetch(u + '&_=' + Date.now()).then(async r => { const t = await r.text(); if (!r.ok || /^\s*</.test(t)) throw 0; return t; });
+  const [text, log] = await Promise.all([get(ref.csv), ref.pub ? null
+    : get(`https://docs.google.com/spreadsheets/d/${ref.id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(LOG_TAB)}`).catch(() => null)]);
+  return { text, log, time: new Date(), auto: false };
 }
 const fmtTime = d => `${d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} ngày ${fmtD(d)}`;
 async function load(link, live) {
@@ -478,7 +634,7 @@ async function load(link, live) {
   if (!ref) { showErr('Link không đúng dạng Google Sheet.'); return; }
   $('refresh').disabled = true; $('refresh').textContent = 'Đang cập nhật…';
   try {
-    const { text, time, auto } = await fetchSheet(ref, live);
+    const { text, log, time, auto } = await fetchSheet(ref, live);
     const all = parseCSV(text);
     if (!all.length) throw 1;
     const same = live && S.link === link;
@@ -487,7 +643,9 @@ async function load(link, live) {
       S.group = ''; S.q = ''; $('q').value = ''; S.watchOnly = false; S.rawJ = null; S.open = null;
       try { S.watch = new Set(JSON.parse(localStorage.getItem(`watch:${ref.id}:${ref.gid}`) || '[]')); } catch { S.watch = new Set(); }
       analyze();
+      $('report').classList.add('intro'); setTimeout(() => $('report').classList.remove('intro'), 1600);
     }
+    S.log = parseLog(log, text);
     S.items = buildItems();
     $('report').hidden = false;
     $('status').innerHTML = `Cập nhật lúc <b>${fmtTime(time)}</b> · ${auto ? 'quét tự động lúc 10:00 sáng hằng ngày' : 'lấy trực tiếp từ Google Sheet'}`;
@@ -523,6 +681,7 @@ for (const r of ['value', 'cmp', 'group', 'date']) $('r-' + r).addEventListener(
 });
 document.addEventListener('click', e => {
   const t = e.target;
+  if (t.closest('a')) return;
   const rb = t.closest('[data-r]'); if (rb) { S.range = +rb.dataset.r; render(); return; }
   const st = t.closest('[data-star]');
   if (st) {
@@ -541,6 +700,29 @@ $('dlg').addEventListener('close', () => { S.open = null; $('tip').style.display
 let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => S.items.length && render(), 150); });
 
 $('refresh').addEventListener('click', () => S.link && load(S.link, true));
+
+/* ---------- giao diện: sáng / tối / tự động, độ trong của kính, hiệu ứng ---------- */
+const root = document.documentElement, THEMES = [['', '◐', 'tự động theo máy'], ['light', '☀', 'ban ngày'], ['dark', '☾', 'ban đêm']];
+function setTheme(k) {
+  const [, icon, name] = THEMES.find(x => x[0] === k) || THEMES[0];
+  if (k) root.dataset.theme = k; else delete root.dataset.theme;
+  $('theme').textContent = icon; $('theme').title = 'Giao diện: ' + name;
+  try { localStorage.setItem('theme', k); } catch { }
+}
+let want = root.dataset.theme || ''; // chế độ đích; callback của view transition có thể chạy trễ nên chỉ áp đúng giá trị này
+setTheme(want);
+$('theme').addEventListener('click', () => {
+  want = THEMES[(THEMES.findIndex(x => x[0] === want) + 1) % THEMES.length][0];
+  const go = () => setTheme(want);
+  document.startViewTransition ? document.startViewTransition(go) : go();
+});
+$('tint').value = getComputedStyle(root).getPropertyValue('--tint').trim() || .35;
+$('tint').addEventListener('input', e => { root.style.setProperty('--tint', e.target.value); try { localStorage.setItem('tint', e.target.value); } catch { } });
+addEventListener('scroll', () => document.body.classList.toggle('scrolled', scrollY > 40), { passive: true });
+addEventListener('pointermove', e => { // vệt sáng trên kính chạy theo con trỏ
+  const g = e.target.closest?.('.kpi,.card'); if (!g) return;
+  const r = g.getBoundingClientRect(); g.style.setProperty('--mx', e.clientX - r.left + 'px'); g.style.setProperty('--my', e.clientY - r.top + 'px');
+}, { passive: true });
 
 openSheet(new URLSearchParams(location.search).get('sheet') || DEFAULT_LINK);
 </script>
