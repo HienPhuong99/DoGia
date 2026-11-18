@@ -1,2 +1,2 @@
-# Mỗi dòng 1 link Google Sheet (đã chia sẻ công khai) cần chụp lịch sử giá tự động.
+# Mỗi dòng 1 link Google Sheet (đã chia sẻ công khai) — được quét giá tự động lúc 10:00 sáng mỗi ngày.
 https://docs.google.com/spreadsheets/d/1pXlE41ArlhpHfkVwq83HpsHe2Y5-L6EhdHxBrqOkNdY/edit?gid=0

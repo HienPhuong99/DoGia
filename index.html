@@ -76,6 +76,10 @@ th.n{text-align:right}
 tr:last-child td{border-bottom:0}
 #track tbody tr{cursor:pointer}
 #track tbody tr:hover{background:var(--track)}
+.upd{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:4px}
+.upd b{color:var(--text)}
+#refresh{font-size:13px;padding:5px 12px;border-color:var(--accent);color:var(--accent);font-weight:600}
+#refresh:disabled{opacity:.6;cursor:wait}
 .pname{font-weight:600}
 .pcell{white-space:normal;min-width:150px}
 .show-m{display:none;margin-top:3px}
@@ -110,7 +114,8 @@ details.raw summary{cursor:pointer;font-weight:600;margin:16px 0 8px}
 <body>
 <main>
   <div class="top">
-    <div><h1 id="title">Theo dõi giá</h1><div class="sub" id="status">Đang tải…</div></div>
+    <div><h1 id="title">Theo dõi giá</h1>
+      <div class="upd"><span class="sub" id="status">Đang tải…</span><button type="button" id="refresh">⟳ Cập nhật ngay</button></div></div>
     <div class="seg" id="range" role="group" aria-label="Khoảng thời gian"></div>
   </div>
 
@@ -127,7 +132,7 @@ details.raw summary{cursor:pointer;font-weight:600;margin:16px 0 8px}
       <label class="sel">Nhóm theo<select id="r-group"></select></label>
       <label class="sel">Ngày cập nhật<select id="r-date"></select></label>
     </div>
-    <div class="sub" id="histNote" style="margin-top:8px"></div>
+    <div class="sub" id="scanNote" style="margin-top:8px"></div>
   </details>
   <div class="warn" id="err" hidden></div>
 
@@ -159,9 +164,9 @@ details.raw summary{cursor:pointer;font-weight:600;margin:16px 0 8px}
 <script>
 const DEFAULT_LINK = 'https://docs.google.com/spreadsheets/d/1pXlE41ArlhpHfkVwq83HpsHe2Y5-L6EhdHxBrqOkNdY/edit?gid=0';
 const RANGES = [[7, '7 ngày'], [30, '30 ngày'], [90, '90 ngày'], [0, 'Tất cả']];
-const REFRESH_MS = 5 * 60 * 1000, DAY = 864e5, TOP = 15, NEW_DAYS = 3;
+const DAY = 864e5, TOP = 15, NEW_DAYS = 3;
 const today = new Date(); today.setHours(0, 0, 0, 0);
-const S = { link: '', id: '', gid: '0', headers: [], rows: [], cols: [], role: {}, hist: [], histDays: 0,
+const S = { link: '', id: '', gid: '0', headers: [], rows: [], cols: [], role: {},
   q: '', group: '', watchOnly: false, sortK: 'chg', sortDir: 1, rawJ: null, rawDir: 1, range: 30, watch: new Set(), items: [], open: null };
 
 /* ---------- tiện ích ---------- */
@@ -243,20 +248,15 @@ const textKey = r => S.cols.filter(c => c.type === 'text').map(c => (r[c.j] || '
 const rowLabel = r => S.cols.filter(c => c.type === 'text' && c.j !== S.role.group).map(c => (r[c.j] || '').trim()).filter(Boolean).join(' · ') || textKey(r) || '—';
 
 /* ---------- dựng chuỗi giá theo thời gian cho từng sản phẩm ---------- */
-// Nguồn: (1) lịch sử chụp tự động history/*.csv, (2) cột giá cũ + ngày cập nhật trong sheet, (3) giá hiện tại.
+// Nguồn: cột giá cũ + ngày cập nhật trong sheet, và giá hiện tại.
 // Điểm t=null là "giá trước lần đổi gần nhất", không rõ từ ngày nào -> vẽ nét đứt.
 const at = (pts, D) => { let p = pts[0].p; for (const x of pts) { if (!x.t || x.t <= D) p = x.p; else break; } return p; };
 function buildItems() {
   const R = S.role; if (R.value == null) return [];
-  const hist = new Map();
-  for (const h of S.hist) {
-    const p = num(h.r[R.value]); if (p == null) continue;
-    const k = textKey(h.r); (hist.get(k) || hist.set(k, []).get(k)).push({ t: h.t, p });
-  }
   return S.rows.map(r => {
     const v = num(r[R.value]); if (v == null) return null;
     const o = R.cmp != null ? num(r[R.cmp]) : null, d = R.date != null ? date(r[R.date]) : null, key = textKey(r);
-    const raw = [...(hist.get(key) || [])];
+    const raw = [];
     if (o != null && o !== v) raw.push({ t: null, p: o }, { t: d || today, p: v }); else raw.push({ t: d, p: v });
     raw.push({ t: today, p: v });
     raw.sort((a, b) => (a.t ? +a.t : -Infinity) - (b.t ? +b.t : -Infinity));
@@ -460,46 +460,47 @@ function openDetail(key, refresh) {
 }
 
 /* ---------- tải dữ liệu ---------- */
-async function loadHistory(ref) {
-  S.hist = []; S.histDays = 0;
-  try {
-    const res = await fetch(`history/${ref.id}_${ref.gid}.csv?_=${Date.now()}`);
-    if (!res.ok) return;
-    const [head, ...body] = parseCSV(await res.text());
-    const map = S.headers.map(h => head.indexOf(h.trim()));
-    S.hist = body.map(r => ({ t: date(r[0]), r: map.map(k => k < 0 ? '' : r[k]) })).filter(h => h.t).sort((a, b) => a.t - b.t);
-    S.histDays = new Set(S.hist.map(h => +h.t)).size;
+// Bản quét tự động lúc 10:00 hằng ngày (data/<id>_<gid>.json, do GitHub Actions tạo); live=true thì đọc thẳng Google Sheet.
+async function fetchSheet(ref, live) {
+  if (!live) try {
+    const res = await fetch(`data/${ref.id}_${ref.gid}.json?_=${Date.now()}`);
+    if (res.ok) { const j = await res.json(); return { text: j.csv, time: new Date(j.time), auto: true }; }
   } catch { }
+  const res = await fetch(ref.csv + '&_=' + Date.now());
+  const text = await res.text();
+  if (!res.ok || /^\s*</.test(text)) throw 0;
+  return { text, time: new Date(), auto: false };
 }
-async function load(link, keepView) {
+const fmtTime = d => `${d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} ngày ${fmtD(d)}`;
+async function load(link, live) {
   const ref = sheetRef(link);
   $('err').hidden = true;
   if (!ref) { showErr('Link không đúng dạng Google Sheet.'); return; }
+  $('refresh').disabled = true; $('refresh').textContent = 'Đang cập nhật…';
   try {
-    const res = await fetch(ref.csv + '&_=' + Date.now());
-    const text = await res.text();
-    if (!res.ok || /^\s*</.test(text)) throw 0;
+    const { text, time, auto } = await fetchSheet(ref, live);
     const all = parseCSV(text);
     if (!all.length) throw 1;
-    const same = keepView && S.link === link;
+    const same = live && S.link === link;
     S.headers = all[0]; S.rows = all.slice(1); S.link = link; S.id = ref.id; S.gid = ref.gid;
     if (!same) {
       S.group = ''; S.q = ''; $('q').value = ''; S.watchOnly = false; S.rawJ = null; S.open = null;
       try { S.watch = new Set(JSON.parse(localStorage.getItem(`watch:${ref.id}:${ref.gid}`) || '[]')); } catch { S.watch = new Set(); }
       analyze();
     }
-    await loadHistory(ref);
     S.items = buildItems();
     $('report').hidden = false;
-    $('status').textContent = `${S.rows.length} dòng · cập nhật trực tiếp từ Google Sheet lúc ${new Date().toLocaleTimeString('vi-VN')} · tự làm mới mỗi 5 phút`;
-    $('histNote').textContent = S.histDays
-      ? `Lịch sử tự động: ${S.histDays} lần chụp có thay đổi, từ ${fmtD(S.hist[0].t)} (GitHub Actions chụp sheet 3 tiếng/lần).`
-      : 'Sheet này chưa có lịch sử chụp tự động — đang dùng cột giá cũ + ngày cập nhật. Thêm link vào file sheets.txt trong repo để bắt đầu lưu lịch sử.';
+    $('status').innerHTML = `Cập nhật lúc <b>${fmtTime(time)}</b> · ${auto ? 'quét tự động lúc 10:00 sáng hằng ngày' : 'lấy trực tiếp từ Google Sheet'}`;
+    if (!live) $('scanNote').textContent = auto
+      ? 'Sheet này được quét giá tự động lúc 10:00 sáng mỗi ngày. Bấm “Cập nhật ngay” để lấy giá mới nhất bất cứ lúc nào.'
+      : 'Sheet này chưa nằm trong danh sách quét tự động (file sheets.txt trong repo) — giá được lấy trực tiếp mỗi lần mở trang.';
     render();
   } catch (e) {
-    if (!keepView) $('report').hidden = true;
-    showErr(e === 1 ? 'Sheet trống.' : 'Không đọc được sheet. Mở sheet → Chia sẻ → “Bất kỳ ai có đường liên kết” → Người xem, rồi bấm “Xem báo cáo” lại.');
+    if (!live) $('report').hidden = true;
+    showErr(e === 1 ? 'Sheet trống.' : 'Không đọc được sheet. Mở sheet → Chia sẻ → “Bất kỳ ai có đường liên kết” → Người xem, rồi thử lại.');
     $('src').open = true;
+  } finally {
+    $('refresh').disabled = false; $('refresh').textContent = '⟳ Cập nhật ngay';
   }
 }
 function showErr(msg) { $('err').textContent = msg; $('err').hidden = false; }
@@ -539,8 +540,9 @@ document.addEventListener('click', e => {
 $('dlg').addEventListener('close', () => { S.open = null; $('tip').style.display = 'none'; });
 let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => S.items.length && render(), 150); });
 
+$('refresh').addEventListener('click', () => S.link && load(S.link, true));
+
 openSheet(new URLSearchParams(location.search).get('sheet') || DEFAULT_LINK);
-setInterval(() => S.link && load(S.link, true), REFRESH_MS);
 </script>
 </body>
 </html>
