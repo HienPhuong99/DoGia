@@ -26,18 +26,20 @@
 --g:30 30 36;--ga:calc(.36 + var(--tint)*.52);--brd:rgba(255,255,255,.14);--edge:rgba(0,0,0,.6);--spec:rgba(255,255,255,.24);--glow:rgba(255,255,255,.1);
 --sh:0 10px 30px rgba(0,0,0,.45);--sh-s:0 2px 8px rgba(0,0,0,.35);--lens:rgba(120,120,128,.55);--solid:#1c1c1e}
 
-.top::before,.kpi,.card,.tablewrap,details.src,.seg,.btn,.chip,input:not([type=range]),select,#tip,dialog{background:rgb(var(--g)/var(--ga));
--webkit-backdrop-filter:blur(24px) saturate(1.8);backdrop-filter:blur(24px) saturate(1.8);border:1px solid var(--brd);
+.top::before,.kpi,.card,.tablewrap,details.src,.seg,#tip,dialog{background:rgb(var(--g)/var(--ga));
+-webkit-backdrop-filter:blur(20px) saturate(1.75);backdrop-filter:blur(20px) saturate(1.75);border:1px solid var(--brd);
 box-shadow:inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge),var(--sh)}
-.seg,.btn,.chip,input:not([type=range]),select{box-shadow:inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge),var(--sh-s)}
+.btn,.chip,input:not([type=range]),select{background:rgb(var(--g)/var(--ga));
+-webkit-backdrop-filter:blur(12px) saturate(1.5);backdrop-filter:blur(12px) saturate(1.5);border:1px solid var(--brd);
+box-shadow:inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge),var(--sh-s)}
+.seg{box-shadow:inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge),var(--sh-s)}
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{margin:0;min-height:100vh;background:var(--wall);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable","Segoe UI",system-ui,Roboto,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:contain}
-body::before{content:"";position:fixed;inset:-25%;z-index:-1;pointer-events:none;background:radial-gradient(36% 30% at 18% 14%,var(--b1),transparent 70%),radial-gradient(32% 28% at 84% 16%,var(--b2),transparent 70%),radial-gradient(40% 36% at 74% 86%,var(--b3),transparent 70%),radial-gradient(36% 34% at 10% 84%,var(--b4),transparent 70%);will-change:transform;transform:translateZ(0);animation:drift 40s ease-in-out infinite alternate}
-@keyframes drift{to{transform:translate3d(5%,-4%,0) rotate(10deg) scale(1.06)}}
+body::before{content:"";position:fixed;inset:-18%;z-index:-1;pointer-events:none;background:radial-gradient(38% 32% at 18% 14%,var(--b1),transparent 70%),radial-gradient(34% 30% at 84% 16%,var(--b2),transparent 70%),radial-gradient(40% 36% at 74% 86%,var(--b3),transparent 70%),radial-gradient(36% 34% at 10% 84%,var(--b4),transparent 70%);transform:translateZ(0)}
 main{max-width:1180px;margin:0 auto;padding:0 16px 48px}
-h1{font-size:30px;line-height:1.15;font-weight:700;letter-spacing:-.022em;margin:0;transition:font-size .45s var(--out)}
+h1{font-size:30px;line-height:1.15;font-weight:700;letter-spacing:-.022em;margin:0;transform-origin:left center;transition:transform .34s var(--ios)}
 h2{font-size:21px;letter-spacing:-.015em;margin:0}
 h3{font-size:15px;font-weight:600;letter-spacing:-.01em;margin:0 0 10px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center}
 h3 small{font-weight:400;color:var(--muted);font-size:12px}
@@ -48,27 +50,28 @@ input,select{font:inherit;color:inherit;border-radius:14px;padding:9px 14px;min-
 input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 input::placeholder{color:var(--faint)}
 button,summary,.mv,#track tbody tr,.chip,.cmp15-pill{touch-action:manipulation}
-.btn{border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px;white-space:nowrap;transition:scale .42s var(--spring),background-color .2s}
-.btn:active,.chip:active{scale:.93;transition-duration:.12s}
+.btn{border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px;white-space:nowrap;transition:transform .34s var(--ios),background-color .18s}
+.btn:active,.chip:active{transform:scale(.94);transition-duration:.1s}
 .btn.tint{background:color-mix(in srgb,var(--accent) 88%,transparent);border-color:rgba(255,255,255,.35);color:#fff}
 .btn.icon{width:38px;height:38px;padding:0;font-size:17px;display:inline-grid;place-items:center}
 .btn:disabled{opacity:.6;cursor:wait}
 
 .top{position:sticky;top:max(10px,env(safe-area-inset-top));z-index:10;isolation:isolate;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 14px;margin:12px 0 14px;padding:14px 18px;border-radius:28px}
-.top::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;transition:background .3s}
+.top::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;transition:background-color .24s ease}
 .scrolled .top{--ga:calc(.62 + var(--tint)*.33)}
-.scrolled h1{font-size:20px}
+.scrolled h1{transform:scale(.72)}
 .acts{display:flex;gap:8px;align-items:center}
-.upd{margin-top:2px}
+.upd{margin-top:2px;transition:opacity .22s ease}
+.scrolled .upd{opacity:.65}
 .upd b{color:var(--text);font-weight:600}
 
 .seg{position:relative;display:inline-flex;padding:3px;border-radius:999px;touch-action:none}
-.seg button{position:relative;z-index:1;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;transition:color .22s,scale .42s var(--spring)}
-.seg button:active{scale:.92;transition-duration:.12s}
+.seg button{position:relative;z-index:1;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;transition:color .18s,transform .32s var(--ios)}
+.seg button:active{transform:scale(.93);transition-duration:.1s}
 .seg button[aria-pressed=true]{color:var(--text)}
-.lens{position:absolute;z-index:0;top:3px;bottom:3px;left:0;border-radius:999px;background:var(--lens);box-shadow:0 2px 10px rgba(0,0,0,.14),inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge);transition:translate .5s var(--spring),width .5s var(--spring);will-change:translate,width}
-.lens.jelly{animation:jelly .5s var(--spring)}
-@keyframes jelly{25%{scale:1.12 .86}}
+.lens{position:absolute;z-index:0;top:3px;bottom:3px;left:0;width:100px;transform-origin:left center;border-radius:999px;background:var(--lens);box-shadow:0 2px 10px rgba(0,0,0,.14),inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge);transition:transform .38s var(--ios);will-change:transform}
+.lens.jelly{animation:jelly .42s var(--spring)}
+@keyframes jelly{25%{scale:1.06 .92}}
 
 details::details-content{block-size:0;overflow:hidden;opacity:0;transform:translateY(-4px);transition:block-size .38s var(--ios),opacity .26s ease,transform .36s var(--ios),content-visibility .38s allow-discrete}
 details[open]::details-content{block-size:auto;opacity:1;transform:translateY(0)}
@@ -90,18 +93,18 @@ input[type=range]{accent-color:var(--accent);padding:0;margin:8px 0}
 .filters input{flex:1 1 200px;border-radius:999px;padding:10px 16px}
 .chips{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 8px;margin:0 -2px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-snap-type:x proximity;touch-action:pan-x}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex-shrink:0;white-space:nowrap;scroll-snap-align:start;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:500;transition:scale .42s var(--spring),background-color .2s,color .2s}
+.chip{flex-shrink:0;white-space:nowrap;scroll-snap-align:start;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:500;transition:transform .32s var(--ios),background-color .18s,color .18s}
 .chip[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 88%,transparent);color:#fff;border-color:rgba(255,255,255,.3)}
 
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin-bottom:12px}
-.kpi,.card{position:relative;border-radius:24px;padding:14px 16px;min-width:0}
+.kpi,.card{position:relative;border-radius:24px;padding:14px 16px;min-width:0;contain:layout style}
 .kpi::before,.card::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background:radial-gradient(380px circle at var(--mx,15%) var(--my,-40%),var(--glow),transparent 55%)}
 .kpi b{display:block;font-size:24px;font-weight:700;letter-spacing:-.02em;margin:2px 0}
 .kpi span{display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:10px;margin-bottom:12px}
 .wide{grid-column:1/-1}
-.intro .kpi,.intro .card,.intro .tablewrap{animation:rise .8s var(--spring) both;animation-delay:calc(var(--i,4)*50ms)}
-@keyframes rise{from{opacity:0;translate:0 18px;scale:.97}}
+.intro .kpi,.intro .card,.intro .tablewrap{animation:rise .52s var(--ios) both;animation-delay:calc(min(var(--i,4),6)*26ms)}
+@keyframes rise{from{opacity:0;transform:translate3d(0,14px,0) scale(.975)}}
 
 .chart{position:relative;width:100%;touch-action:pan-y}
 .chart svg{display:block;width:100%}
@@ -116,14 +119,14 @@ input[type=range]{accent-color:var(--accent);padding:0;margin:8px 0}
 .bar.me{font-weight:700}
 .bl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bt{height:12px}
-.bt i{display:block;height:100%;min-width:3px;background:var(--accent);border-radius:0 4px 4px 0}
-.intro .bt i{animation:grow 1s var(--out) both .2s}
-@keyframes grow{from{width:0}}
+.bt i{display:block;height:100%;min-width:3px;background:var(--accent);border-radius:0 4px 4px 0;transform-origin:left center}
+.intro .bt i{animation:grow .65s var(--ios) both .12s}
+@keyframes grow{from{transform:scaleX(0)}}
 .bv{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
 .more{font-size:12px;color:var(--muted);margin-top:6px}
-.mv{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px;margin:0 -8px;border-radius:14px;border-bottom:.5px solid var(--line);font-size:14px;cursor:pointer;transition:background-color .18s,transform .38s var(--spring)}
+.mv{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px;margin:0 -8px;border-radius:14px;border-bottom:.5px solid var(--line);font-size:14px;cursor:pointer;transition:background-color .16s,transform .3s var(--ios)}
 .mv:last-child{border-bottom:0}
-.mv:active{background:var(--track);transform:scale(.984);transition-duration:.1s}
+.mv:active{background:var(--track);transform:scale(.984);transition-duration:.08s}
 .ml{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .n s{color:var(--faint);font-size:12px}
@@ -140,15 +143,16 @@ th,td{padding:10px 14px;text-align:left;border-bottom:.5px solid var(--line);whi
 th{font-size:12px;color:var(--muted);font-weight:600;cursor:pointer;user-select:none}
 th.n{text-align:right}
 tr:last-child td{border-bottom:0}
-#track tbody tr{cursor:pointer;transition:background-color .18s,transform .35s var(--spring)}
-#track tbody tr:active{background:var(--track)}
+#track tbody tr,#raw tbody tr{content-visibility:auto;contain-intrinsic-size:auto 56px}
+#track tbody tr{cursor:pointer;transition:background-color .16s,transform .3s var(--ios)}
+#track tbody tr:active{background:var(--track);transform:scale(.992);transition-duration:.08s}
 @media (hover:hover) and (pointer:fine){.bar:hover,.mv:hover,#track tbody tr:hover{background:var(--track)}}
 .pname{font-weight:600}
 .pcell{white-space:normal;min-width:150px}
 .show-m{display:none;margin-top:3px}
 .pgrp{font-size:12px;color:var(--muted)}
-.star{padding:0 4px;font-size:19px;color:var(--faint);line-height:1;transition:scale .5s var(--spring),color .2s}
-.star:active{scale:.7;transition-duration:.1s}
+.star{padding:0 4px;font-size:19px;color:var(--faint);line-height:1;transition:transform .36s var(--spring),color .18s}
+.star:active{transform:scale(.72);transition-duration:.08s}
 .star[aria-pressed=true]{color:var(--star)}
 .spark{display:block}
 .spark.down{color:var(--down)} .spark.up{color:var(--up)} .spark.flat{color:var(--faint)}
@@ -160,16 +164,17 @@ tr:last-child td{border-bottom:0}
 .verdict{display:inline-block;font-size:13px;font-weight:600;padding:4px 11px;border-radius:999px;background:var(--track)}
 .verdict.down{background:var(--down-bg);color:var(--down)} .verdict.up{background:var(--up-bg);color:var(--up)}
 
-dialog{padding:0;width:min(760px,calc(100% - 24px));max-height:calc(100% - 24px);border-radius:34px;color:var(--text);--ga:calc(.55 + var(--tint)*.4);overscroll-behavior:contain;will-change:transform,opacity}
-dialog[open]{animation:pop .46s var(--ios)}
-dialog.closing{transform:translate3d(0,16px,0) scale(.95);opacity:0;transition:transform .26s var(--ios),opacity .22s ease}
-dialog.closing::backdrop{opacity:0;transition:opacity .22s ease}
+dialog{padding:0;width:min(760px,calc(100% - 24px));max-height:calc(100% - 24px);border-radius:34px;color:var(--text);--ga:calc(.55 + var(--tint)*.4);overscroll-behavior:contain}
+dialog[open],dialog.closing{will-change:transform,opacity}
+dialog[open]{animation:pop .36s var(--ios)}
+dialog.closing{transform:translate3d(0,16px,0) scale(.95);opacity:0;transition:transform .24s var(--ios),opacity .2s ease}
+dialog.closing::backdrop{opacity:0;transition:opacity .2s ease}
 dialog .card{background:var(--track);-webkit-backdrop-filter:none;backdrop-filter:none;border-color:var(--line);box-shadow:none;border-radius:16px}
 dialog .card::before{display:none}
 @keyframes pop{from{opacity:0;transform:translate3d(0,22px,0) scale(.94)}}
 @keyframes iosDrop{from{opacity:0;transform:translate3d(0,-8px,0) scale(.985)}}
-.cmp15-card{animation:iosDrop .32s var(--ios)}
-dialog::backdrop{background:rgba(0,0,0,.22);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);transition:opacity .26s ease}
+.cmp15-card{animation:iosDrop .28s var(--ios)}
+dialog::backdrop{background:rgba(0,0,0,.22);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);transition:opacity .22s ease}
 .dlg{padding:20px}
 .dlg-h{display:flex;justify-content:space-between;gap:12px;align-items:start;margin-bottom:10px;touch-action:none}
 .big-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 12px;margin:6px 0}
@@ -177,7 +182,8 @@ dialog::backdrop{background:rgba(0,0,0,.22);-webkit-backdrop-filter:blur(4px);ba
 .cmp15-btn{font-size:13px;padding:6px 12px}
 .cmp15-card .ev{grid-template-columns:1fr auto}
 .cmp15-opts{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.cmp15-pill{border-radius:999px;padding:4px 10px;font-size:12px;font-weight:500;background:var(--card,rgba(255,255,255,.5));border:1px solid var(--line);transition:scale .4s var(--spring),background .2s}
+.cmp15-pill{border-radius:999px;padding:4px 10px;font-size:12px;font-weight:500;background:var(--card,rgba(255,255,255,.5));border:1px solid var(--line);transition:transform .32s var(--ios),background-color .18s}
+.cmp15-pill:active{transform:scale(.93);transition-duration:.08s}
 .cmp15-pill[aria-pressed=true]{background:var(--accent);color:#fff;border-color:transparent;font-weight:600}
 .cmp15-total{font-size:18px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:12px 0}
@@ -192,11 +198,11 @@ details.raw summary{cursor:pointer;font-weight:600;margin:16px 0 8px}
 main{padding:0 12px calc(96px + env(safe-area-inset-bottom))}
 .top{top:max(8px,env(safe-area-inset-top));margin:8px 0 12px;padding:12px 14px;border-radius:24px}
 .top{flex-wrap:nowrap;align-items:flex-start}
-h1{font-size:26px} .scrolled h1{font-size:18px} .scrolled .upd{display:none}
+h1{font-size:26px} .scrolled h1{transform:scale(.74)}
 #refresh{width:38px;height:38px;padding:0;font-size:0;display:inline-grid;place-items:center}
 #refresh::before{content:"⟳";font-size:19px}
 .mv{grid-template-columns:1fr auto;row-gap:4px}.mv .ml{grid-column:1/-1;white-space:normal}
-#range{position:fixed;z-index:20;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));translate:-50% 0;padding:4px;box-shadow:inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge),0 12px 32px rgba(0,0,0,.22)}
+#range{position:fixed;z-index:20;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translate3d(-50%,0,0);padding:4px;box-shadow:inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge),0 12px 32px rgba(0,0,0,.22)}
 #range button{padding:10px 15px;font-size:14px}
 #range .lens{top:4px;bottom:4px}
 .kpis{grid-template-columns:1fr 1fr;gap:8px}
@@ -208,8 +214,8 @@ h1{font-size:26px} .scrolled h1{font-size:18px} .scrolled .upd{display:none}
 .cmp15-card .ev span:first-child{grid-column:auto;color:var(--muted);font-size:13px}
 .bar{grid-template-columns:1fr auto}.bl{grid-column:1/-1}
 dialog{width:100%;max-width:100%;max-height:92dvh;margin:auto 0 0;border-radius:30px 30px 0 0;border-bottom:0}
-dialog[open]{animation:sheet .46s var(--ios)}
-dialog.closing{transform:translate3d(0,100%,0);opacity:1;transition:transform .3s var(--ios)}
+dialog[open]{animation:sheet .36s var(--ios)}
+dialog.closing{transform:translate3d(0,100%,0);opacity:1;transition:transform .28s var(--ios)}
 .dlg{padding:10px 16px calc(20px + env(safe-area-inset-bottom))}
 .dlg::before{content:"";display:block;width:38px;height:5px;border-radius:3px;background:var(--faint);opacity:.6;margin:0 auto 10px}
 .big{font-size:30px}
@@ -442,18 +448,26 @@ function drawLine(el, s, t0, opts = {}) {
   // Hộp tooltip phải nằm trong <dialog> thì mới hiện trên cửa sổ chi tiết; dialog kính mờ là khung toạ độ của nó.
   const cross = el.querySelector('.cross'), tip = $('tip'), host = el.closest('dialog') || document.body;
   if (tip.parentNode !== host) host.append(tip);
+  let pRaf = 0, lastE = null, tipW = 140;
   el.onpointermove = e => {
-    const x = e.clientX - el.getBoundingClientRect().left, t = T0 + (x - P.l) / (W - P.l - P.r) * span;
-    if (t < T0 || t > T1 + DAY / 2) { el.onpointerleave(); return; }
-    let p = s[0].p; for (const q of s) if (+q.t <= t) p = q.p;
-    cross.setAttribute('x1', x); cross.setAttribute('x2', x);
-    tip.textContent = `${fmtD(new Date(Math.min(t, T1)))}: ${fmt(Math.round(p))}`;
-    tip.style.display = 'block';
-    const o = host === document.body ? { left: 0, top: 0 } : host.getBoundingClientRect();
-    tip.style.left = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8) - o.left + host.scrollLeft * (host !== document.body) + 'px';
-    tip.style.top = e.clientY - 40 - o.top + host.scrollTop * (host !== document.body) + 'px';
+    lastE = e;
+    if (pRaf) return;
+    pRaf = requestAnimationFrame(() => {
+      pRaf = 0; if (!lastE) return;
+      const rect = el.getBoundingClientRect(), x = lastE.clientX - rect.left, t = T0 + (x - P.l) / (W - P.l - P.r) * span;
+      if (t < T0 || t > T1 + DAY / 2) { el.onpointerleave(); return; }
+      let p = s[0].p; for (const q of s) if (+q.t <= t) p = q.p;
+      const o = host === document.body ? { left: 0, top: 0 } : host.getBoundingClientRect();
+      const sx = host !== document.body ? host.scrollLeft : 0, sy = host !== document.body ? host.scrollTop : 0;
+      cross.setAttribute('x1', x); cross.setAttribute('x2', x);
+      tip.textContent = `${fmtD(new Date(Math.min(t, T1)))}: ${fmt(Math.round(p))}`;
+      tip.style.display = 'block';
+      tipW = tip.offsetWidth || tipW;
+      tip.style.left = Math.min(lastE.clientX + 12, innerWidth - tipW - 8) - o.left + sx + 'px';
+      tip.style.top = lastE.clientY - 40 - o.top + sy + 'px';
+    });
   };
-  el.onpointerleave = () => { tip.style.display = 'none'; cross.setAttribute('x1', -9); cross.setAttribute('x2', -9); };
+  el.onpointerleave = () => { lastE = null; if (pRaf) { cancelAnimationFrame(pRaf); pRaf = 0; } tip.style.display = 'none'; cross.setAttribute('x1', -9); cross.setAttribute('x2', -9); };
 }
 const series = (pts, t0) => [{ t: t0, p: at(pts, t0) }, ...pts.filter(x => x.t && x.t > t0)];
 function spark(i, t0) {
@@ -469,16 +483,24 @@ const bars = (title, data, note = '', sub = '') => `<h3>${esc(title)}${sub ? `<s
     <span class="bt"><i style="width:${d.pct}%"></i></span><span class="bv">${d.html || esc(d.text)}</span></div>`).join('')
 }${note ? `<div class="more">${esc(note)}</div>` : ''}`;
 const scale = (data, key) => { const m = Math.max(...data.map(d => Math.abs(d[key]))) || 1; data.forEach(d => d.pct = Math.abs(d[key]) / m * 100); return data; };
-// Nút chọn kiểu iOS: viên kính trượt từ vị trí cũ sang nút đang chọn, nảy nhẹ khi đổi.
+// Nút chọn kiểu iOS: viên kính trượt hoàn toàn trên GPU (transform translate3d + scaleX), 120Hz không reflow.
 const lensAt = {};
 function seg(el) {
   const b = el?.querySelector('[aria-pressed=true]'); if (!b) return;
-  el.insertAdjacentHTML('afterbegin', '<i class="lens" aria-hidden="true"></i>');
-  const l = el.firstChild, to = { x: b.offsetLeft, w: b.offsetWidth }, from = lensAt[el.id] || to;
-  l.style.transition = 'none'; l.style.translate = from.x + 'px'; l.style.width = from.w + 'px';
-  l.offsetWidth; l.style.transition = '';
-  l.style.translate = to.x + 'px'; l.style.width = to.w + 'px';
-  if (from.x !== to.x) l.classList.add('jelly');
+  let l = el.querySelector('.lens');
+  const first = !l;
+  if (first) { el.insertAdjacentHTML('afterbegin', '<i class="lens" aria-hidden="true"></i>'); l = el.firstChild; }
+  const to = { x: b.offsetLeft, w: b.offsetWidth }, from = lensAt[el.id];
+  const tf = `translate3d(${to.x}px,0,0) scaleX(${(to.w / 100).toFixed(4)})`;
+  if (first || !from) {
+    l.style.transition = 'none'; l.style.transform = tf; l.offsetWidth; l.style.transition = '';
+  } else {
+    l.style.transform = tf;
+    if (from.x !== to.x) {
+      l.classList.remove('jelly');
+      requestAnimationFrame(() => l.classList.add('jelly'));
+    }
+  }
   lensAt[el.id] = to;
 }
 const hostOf = s => { try { return new URL(s).hostname.replace(/^www\./, ''); } catch { return ''; } };
@@ -497,9 +519,17 @@ function seriesRank(g) {
   if (/\bse\b/.test(s)) return 95;
   return 0;
 }
+function syncRangeDom() {
+  const rEl = $('range');
+  if (!rEl.querySelector('button')) {
+    rEl.innerHTML = RANGES.map(([d, t]) => `<button type="button" data-r="${d}" aria-pressed="${d === S.range}">${t}</button>`).join('');
+  } else {
+    for (const b of rEl.querySelectorAll('button[data-r]')) b.setAttribute('aria-pressed', +b.dataset.r === S.range);
+  }
+}
 function render() {
   const R = S.role, rows = filtered(), rowSet = new Set(rows);
-  $('range').innerHTML = RANGES.map(([d, t]) => `<button type="button" data-r="${d}" aria-pressed="${d === S.range}">${t}</button>`).join('');
+  syncRangeDom();
   const groups = R.group == null ? [] : [...new Set(S.rows.map(r => r[R.group]).filter(Boolean))]
     .sort((a, b) => seriesRank(b) - seriesRank(a));
   const watchChip = R.value != null
@@ -577,6 +607,9 @@ function countCharts(rows) { // sheet không có cột số: đếm theo từng 
   }).join('');
 }
 function renderRaw(rows) {
+  const rawEl = $('raw');
+  if (!rawEl.open) { rawEl.dataset.dirty = '1'; return; }
+  delete rawEl.dataset.dirty;
   const cols = S.cols, sc = cols.find(c => c.j === S.rawJ);
   $('rHead').innerHTML = '<tr>' + cols.map(c => `<th data-j="${c.j}" class="${c.type === 'number' ? 'n' : ''}">${esc(c.name)}${c.j === S.rawJ ? (S.rawDir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('') + '</tr>';
   const key = !sc ? null : sc.type === 'number' ? r => num(r[sc.j]) ?? -Infinity : sc.type === 'date' ? r => +(date(r[sc.j]) || 0) : r => r[sc.j] || '';
@@ -717,7 +750,12 @@ function openSheet(link) {
 /* ---------- sự kiện ---------- */
 $('form').addEventListener('submit', e => { e.preventDefault(); openSheet($('link').value.trim()); });
 $('reset').addEventListener('click', () => openSheet(DEFAULT_LINK));
-$('q').addEventListener('input', e => { S.q = e.target.value; render(); });
+let qTm = 0;
+$('q').addEventListener('input', e => {
+  S.q = e.target.value; clearTimeout(qTm);
+  if (!S.q) render(); else qTm = setTimeout(render, 80);
+});
+$('raw').addEventListener('toggle', () => { if ($('raw').open && $('raw').dataset.dirty) renderRaw(filtered()); });
 for (const r of ['value', 'cmp', 'group', 'date']) $('r-' + r).addEventListener('change', e => {
   S.role[r] = e.target.value === '' ? null : +e.target.value;
   if (r === 'group') S.group = '';
@@ -750,7 +788,7 @@ document.addEventListener('click', e => {
   if (t.id === 'dlgClose' || t === $('dlg')) closeDlg();
 });
 
-/* ---------- vuốt chạm chuẩn iOS: đóng sheet 1:1 & lướt thanh chọn kỳ ---------- */
+/* ---------- vuốt chạm chuẩn iOS 120Hz: đóng sheet 1:1 theo vsync & lướt thanh chọn kỳ ---------- */
 const dlgEl = $('dlg'), reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 let closingDlg = false;
 function closeDlg(fromSwipe) {
@@ -758,7 +796,7 @@ function closeDlg(fromSwipe) {
   if (reduceMotion.matches) { dlgEl.style.transform = ''; dlgEl.style.transition = ''; dlgEl.close(); return; }
   closingDlg = true;
   if (fromSwipe) {
-    dlgEl.style.transition = 'transform .3s var(--ios)';
+    dlgEl.style.transition = 'transform .28s var(--ios)';
     dlgEl.style.transform = 'translate3d(0,100%,0)';
   } else {
     dlgEl.style.transform = '';
@@ -775,14 +813,14 @@ function closeDlg(fromSwipe) {
     if (dlgEl.open) dlgEl.close();
   };
   const onEnd = e => { if (e.target === dlgEl && (e.propertyName === 'transform' || e.propertyName === 'opacity')) done(); };
-  const fb = setTimeout(done, 330);
+  const fb = setTimeout(done, 310);
   dlgEl.addEventListener('transitionend', onEnd);
 }
 dlgEl.addEventListener('cancel', e => { e.preventDefault(); closeDlg(); });
 dlgEl.addEventListener('close', () => { S.open = null; closingDlg = false; dlgEl.style.transform = ''; dlgEl.style.transition = ''; dlgEl.classList.remove('closing'); $('tip').style.display = 'none'; });
 
-// Vuốt xuống để đóng bottom sheet (theo tay 1:1, không giật, xét cả khoảng cách và vận tốc)
-let shDrag = null;
+// Vuốt xuống để đóng bottom sheet (đồng bộ từng frame 120Hz qua requestAnimationFrame)
+let shDrag = null, shRaf = 0;
 dlgEl.addEventListener('touchstart', e => {
   if (!dlgEl.open || closingDlg || e.touches.length !== 1) return;
   if (e.target.closest('button, a, input, select, .chart')) return;
@@ -806,36 +844,46 @@ dlgEl.addEventListener('touchmove', e => {
   const now = performance.now();
   shDrag.py = shDrag.ly; shDrag.pt = shDrag.lt;
   shDrag.ly = t.clientY; shDrag.lt = now;
-  const ty = dy > 0 ? dy : dy * 0.18; // rubber-band nhẹ khi kéo ngược lên
-  shDrag.cur = ty;
-  dlgEl.style.transform = `translate3d(0,${ty.toFixed(1)}px,0)`;
+  shDrag.cur = dy > 0 ? dy : dy * 0.18;
+  if (!shRaf) {
+    shRaf = requestAnimationFrame(() => {
+      shRaf = 0;
+      if (shDrag) dlgEl.style.transform = `translate3d(0,${shDrag.cur.toFixed(1)}px,0)`;
+    });
+  }
 }, { passive: false });
 function endSheetDrag() {
   if (!shDrag) return;
+  if (shRaf) { cancelAnimationFrame(shRaf); shRaf = 0; }
   const d = shDrag; shDrag = null;
   if (!d.active) return;
   const dt = Math.max(1, d.lt - d.pt), vy = (d.ly - d.py) / dt;
   if (d.cur > 110 || (d.cur > 24 && vy > 0.55)) closeDlg(true);
   else {
-    dlgEl.style.transition = 'transform .38s var(--spring)';
+    dlgEl.style.transition = 'transform .34s var(--ios)';
     dlgEl.style.transform = 'translate3d(0,0,0)';
-    setTimeout(() => { if (!shDrag && !closingDlg) { dlgEl.style.transition = ''; dlgEl.style.transform = ''; } }, 400);
+    setTimeout(() => { if (!shDrag && !closingDlg) { dlgEl.style.transition = ''; dlgEl.style.transform = ''; } }, 360);
   }
 }
 dlgEl.addEventListener('touchend', endSheetDrag, { passive: true });
 dlgEl.addEventListener('touchcancel', endSheetDrag, { passive: true });
 
-// Lướt ngón tay qua thanh chọn kỳ (#range) kiểu UISegmentedControl iOS
-let segSliding = false;
+// Lướt ngón tay qua thanh chọn kỳ (#range) kiểu UISegmentedControl iOS (viên kính bám tức thì, render theo rAF)
+let segSliding = false, segRaf = 0;
 $('range').addEventListener('touchstart', e => { if (e.touches.length === 1) segSliding = true; }, { passive: true });
 $('range').addEventListener('touchmove', e => {
   if (!segSliding || e.touches.length !== 1) return;
   e.preventDefault();
   const t = e.touches[0], el = document.elementFromPoint(t.clientX, t.clientY)?.closest('#range [data-r]');
-  if (el && +el.dataset.r !== S.range) { S.range = +el.dataset.r; render(); }
+  if (el && +el.dataset.r !== S.range) {
+    S.range = +el.dataset.r;
+    syncRangeDom(); seg($('range'));
+    if (!segRaf) segRaf = requestAnimationFrame(() => { segRaf = 0; render(); });
+  }
 }, { passive: false });
-$('range').addEventListener('touchend', () => { segSliding = false; }, { passive: true });
-$('range').addEventListener('touchcancel', () => { segSliding = false; }, { passive: true });
+const endSegSlide = () => { segSliding = false; };
+$('range').addEventListener('touchend', endSegSlide, { passive: true });
+$('range').addEventListener('touchcancel', endSegSlide, { passive: true });
 
 let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => S.items.length && render(), 150); });
 
@@ -864,9 +912,16 @@ addEventListener('scroll', () => {
   scRaf = requestAnimationFrame(() => { scRaf = 0; document.body.classList.toggle('scrolled', scrollY > 40); });
 }, { passive: true });
 if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
-  addEventListener('pointermove', e => { // vệt sáng trên kính chạy theo con trỏ (chỉ desktop)
-    const g = e.target.closest?.('.kpi,.card'); if (!g) return;
-    const r = g.getBoundingClientRect(); g.style.setProperty('--mx', e.clientX - r.left + 'px'); g.style.setProperty('--my', e.clientY - r.top + 'px');
+  let pmRaf = 0, pmE = null;
+  addEventListener('pointermove', e => { // vệt sáng trên kính chạy theo con trỏ (chỉ desktop, synced rAF)
+    pmE = e; if (pmRaf) return;
+    pmRaf = requestAnimationFrame(() => {
+      pmRaf = 0; if (!pmE) return;
+      const g = pmE.target?.closest?.('.kpi,.card'); if (!g) return;
+      const r = g.getBoundingClientRect();
+      g.style.setProperty('--mx', pmE.clientX - r.left + 'px');
+      g.style.setProperty('--my', pmE.clientY - r.top + 'px');
+    });
   }, { passive: true });
 }
 
