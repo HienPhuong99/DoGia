@@ -160,6 +160,8 @@ tr:last-child td{border-bottom:0}
 
 dialog{padding:0;width:min(760px,calc(100% - 24px));max-height:calc(100% - 24px);border-radius:34px;color:var(--text);--ga:calc(.55 + var(--tint)*.4);overscroll-behavior:contain}
 dialog[open]{animation:pop .55s var(--spring)}
+dialog .card{background:var(--track);-webkit-backdrop-filter:none;backdrop-filter:none;border-color:var(--line);box-shadow:none;border-radius:16px}
+dialog .card::before{display:none}
 @keyframes pop{from{opacity:0;scale:.92;translate:0 24px}}
 dialog::backdrop{background:rgba(0,0,0,.22);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .dlg{padding:20px}
@@ -188,7 +190,7 @@ h1{font-size:26px} .scrolled h1{font-size:18px} .scrolled .upd{display:none}
 .kpi{padding:12px 14px;border-radius:20px} .kpi b{font-size:19px}
 .card{padding:14px;border-radius:22px}
 #track th,#track td{padding:9px 8px}
-.show-m{display:block} .pcell{min-width:0} .hide-m{display:none}
+.show-m{display:flex;flex-direction:column;align-items:flex-end;gap:4px} .pcell{min-width:0} .hide-m{display:none}
 .ev{grid-template-columns:1fr auto}.ev span:first-child{grid-column:1/-1;color:var(--muted);font-size:12px}
 .bar{grid-template-columns:1fr auto}.bl{grid-column:1/-1}
 dialog{width:100%;max-width:100%;max-height:92dvh;margin:auto 0 0;border-radius:30px 30px 0 0;border-bottom:0}
@@ -198,8 +200,10 @@ dialog[open]{animation:sheet .5s var(--out)}
 .big{font-size:30px}
 }
 @keyframes sheet{from{translate:0 100%}}
+::view-transition,::view-transition-group(*){pointer-events:none}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 @media (prefers-reduced-transparency:reduce){:root{--tint:1!important}}
+@media (prefers-contrast:more){:root{--tint:1!important;--muted:var(--text);--line:var(--faint)}}
 </style>
 </head>
 <body>
@@ -562,7 +566,7 @@ function renderTracking(items, t0) {
   $('tBody').innerHTML = list.map(i => `<tr data-k="${esc(i.key)}">
     <td><button type="button" class="star" data-star="${esc(i.key)}" aria-pressed="${S.watch.has(i.key)}" aria-label="Theo dõi">${S.watch.has(i.key) ? '★' : '☆'}</button></td>
     <td class="pcell"><div class="pname">${esc(i.label)}${i.lastT && +i.lastT >= cutoff && i.changes ? '<span class="new">Mới đổi giá</span>' : ''}</div><div class="pgrp">${esc(i.group)}</div></td>
-    <td class="n"><b>${fmt(i.v)}</b><div class="show-m">${chg(i.chg, i.base)}</div></td><td class="n hide-m">${chg(i.chg, i.base)}</td>
+    <td class="n"><b>${fmt(i.v)}</b><div class="show-m">${chg(i.chg, i.base)}${spark(i, t0)}</div></td><td class="n hide-m">${chg(i.chg, i.base)}</td>
     <td class="hide-m">${spark(i, t0)}</td><td class="hide-m">${rng(i)}</td>
     <td class="hide-m">${i.lastT ? fmtD(i.lastT) : '—'}<div class="pgrp">${i.lastT ? ago(i.lastT) : ''}</div></td></tr>`).join('')
     || `<tr><td colspan="7" class="sub">${S.watchOnly ? 'Chưa theo dõi mẫu nào — bấm ☆ ở bảng để thêm' : 'Không có mẫu phù hợp'}</td></tr>`;
