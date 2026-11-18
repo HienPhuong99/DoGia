@@ -25,8 +25,7 @@ for link in open('sheets.txt', encoding='utf-8'):
     new = [] if prev == body else [dict(zip(['Ngày chụp'] + names, [today] + r)) for r in body]
     fields = ['Ngày chụp'] + names + [k for k in (old[0] if old else {}) if k not in names and k != 'Ngày chụp']
     with open(path, 'w', encoding='utf-8', newline='') as f:
-        w = csv.DictWriter(f, fields, restval='', extrasaction='ignore', lineterminator='
-')
+        w = csv.DictWriter(f, fields, restval='', extrasaction='ignore', lineterminator='\n')
         w.writeheader()
         w.writerows(old + new)
     print(path, 'added' if new else 'unchanged', len(new))
