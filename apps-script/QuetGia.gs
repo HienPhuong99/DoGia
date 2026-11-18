@@ -1,10 +1,13 @@
-// Gemini quét giá mỗi ngày — chỉ ghi những món ĐỔI giá.
-// Dán file này vào Google Sheet: Tiện ích mở rộng → Apps Script. Hướng dẫn: apps-script/HUONG-DAN.md
+// Quét giá tam300.com mỗi ngày — chỉ ghi những món ĐỔI giá. 0 token, không cần API key.
+// Mỗi sản phẩm trên trang là <article data-product-card data-offers='[{"capacity","color","price":"20,9 triệu"}]'>,
+// nên script đọc thẳng dữ liệu giá đó (lấy giá thấp nhất theo màu, giống cách sheet đang ghi).
+// Món mơ hồ / không đọc được được ghi vào Cấu hình!A5 để Gemini xử lý qua chat.md.
+// Dán vào Google Sheet: Tiện ích mở rộng → Apps Script. Hướng dẫn: apps-script/HUONG-DAN.md
 const TAB_GIA = 'Trang tính1', TAB_LOG = 'Biến động', TAB_CFG = 'Cấu hình', TZ = 'Asia/Ho_Chi_Minh';
 
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('Theo dõi giá')
-    .addItem('Quét giá bằng Gemini ngay', 'quetGia')
+    .addItem('Quét giá tam300.com ngay', 'quetGia')
     .addItem('Bật quét tự động 9:30 sáng mỗi ngày', 'caiDat')
     .addToUi();
 }
@@ -16,44 +19,58 @@ function caiDat() {
 }
 
 function quetGia() {
-  const ss = SpreadsheetApp.getActive();
-  const [nguon, model, nguong] = ss.getSheetByName(TAB_CFG).getRange('B1:B3').getValues().flat();
-  const urls = String(nguon).trim().split(/\s+/).filter(Boolean);
-  if (!urls.length) throw new Error('Chưa điền link nguồn giá ở tab "Cấu hình", ô B1.');
-  const key = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
-  if (!key) throw new Error('Chưa lưu GEMINI_API_KEY trong Cài đặt dự án → Thuộc tính tập lệnh.');
+  const ss = SpreadsheetApp.getActive(), cfg = ss.getSheetByName(TAB_CFG), sh = ss.getSheetByName(TAB_GIA), log = ss.getSheetByName(TAB_LOG);
+  if (!cfg || !sh || !log) throw new Error(`Thiếu tab "${TAB_GIA}", "${TAB_LOG}" hoặc "${TAB_CFG}" — chưa ghi gì.`);
+  const gio = () => Utilities.formatDate(new Date(), TZ, 'HH:mm dd/MM/yyyy');
+  try {
+    const [nguon, , nguong] = cfg.getRange('B1:B3').getValues().flat();
+    const goc = String(nguon || 'https://tam300.com').trim().replace(/\/+$/, '');
+    const tai = u => {
+      const r = UrlFetchApp.fetch(u, { muteHttpExceptions: true, followRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0' } });
+      if (r.getResponseCode() !== 200) throw new Error(`${u} trả về HTTP ${r.getResponseCode()}`);
+      return r.getContentText();
+    };
 
-  const sh = ss.getSheetByName(TAB_GIA);
-  const rows = sh.getDataRange().getValues();
-  const c = cot(rows[0]);
-  // Gửi danh sách gọn nhất có thể: "chỉ số|tên|giá" — tiết kiệm token đầu vào.
-  const list = rows.slice(1).map((r, i) => r[c.model] && Number(r[c.gia]) ? `${i}|${r[c.model]} ${r[c.dl]} ${r[c.tt]}|${r[c.gia]}` : '').filter(Boolean).join('\n');
-  const prompt = `Đọc giá bán hiện tại của từng sản phẩm trên các trang: ${urls.join(' ')}
-Danh sách (chỉ số|sản phẩm|giá đang ghi, VNĐ):
-${list}
-Chỉ trả về JSON là mảng những món có giá trên trang KHÁC giá đang ghi: [{"i":chỉ số,"p":giá mới (số nguyên VNĐ),"u":"link trang có giá"}].
-Món giữ nguyên giá hoặc không tìm thấy thì bỏ qua. Không món nào đổi thì trả về []. Không giải thích.`;
+    // Trang chủ liệt kê các trang /iphone/...-series; mỗi trang có các thẻ sản phẩm.
+    const trang = timTrang(tai(goc + '/'), goc), lines = [], loiTai = [];
+    trang.forEach(u => { try { docTam300(tai(u)).forEach(l => lines.push(Object.assign(l, { u }))); } catch (e) { loiTai.push(`${u} (${e.message})`); } });
 
-  // Ô B2 có thể ghi nhiều model, cách nhau bằng dấu cách/phẩy: model đầu hết lượt (429) thì thử model sau.
-  const models = String(model || 'gemini-3.8-flash gemini-3.5-flash-lite').split(/[\s,]+/).filter(Boolean);
-  let changes, loi;
-  for (const m of models) {
-    try { changes = goiGemini(key, m, prompt); break; } catch (e) { loi = e; if (!/ 429| 404/.test(e.message)) throw e; }
+    const rows = sh.getDataRange().getValues(), c = cot(rows[0]);
+    const items = rows.slice(1).map((r, i) => ({ i, r, gia: Number(r[c.gia]) })).filter(x => x.r[c.model] && x.gia);
+    const g = ghepGia(items, lines, c);
+
+    // Ghi nhật ký trước rồi mới sửa giá: nếu lỗi giữa chừng thì tệ nhất là trùng 1 dòng nhật ký, không mất lịch sử.
+    const ngay = Utilities.formatDate(new Date(), TZ, 'dd/MM/yyyy'); // chuỗi → sheet vi_VN tự hiểu là ngày
+    const maxPct = Number(nguong) || 30, doi = locThayDoi(rows, c, g.gia, maxPct);
+    if (doi.length) {
+      const add = doi.map(d => [ngay, d.r[c.series] || '', d.r[c.model], d.r[c.dl], d.r[c.tt], d.old, d.p, d.p - d.old, d.u]);
+      log.getRange(log.getLastRow() + 1, 1, add.length, add[0].length).setValues(add);
+    }
+    doi.forEach(d => {
+      sh.getRange(d.n, c.gia + 1).setValue(d.p);
+      if (c.cu >= 0) sh.getRange(d.n, c.cu + 1).setValue(d.old);
+      if (c.ngay >= 0) sh.getRange(d.n, c.ngay + 1).setValue(ngay);
+    });
+
+    // Báo cáo cho người và Gemini: lần quét cuối + những gì script không tự quyết được.
+    const ten = x => `${x.r[c.model]} ${x.r[c.dl]}`;
+    const lech = g.gia.filter(x => x.p !== items.find(y => y.i === x.i).gia && !doi.some(d => d.n === x.i + 2));
+    const canXem = [
+      ...(!trang.length ? ['Trang chủ không còn link /iphone/...-series — có thể tam300.com đã đổi cấu trúc'] : []),
+      ...(trang.length > loiTai.length && !lines.length ? ['Trang không còn dữ liệu data-offers — có thể tam300.com đã đổi cấu trúc'] : []),
+      ...loiTai.map(u => `Không tải được ${u}`),
+      ...g.mo.map(m => `${ten(m.x)}: nhiều giá trên trang (${m.cands.map(l => l.p).join(' / ')})`),
+      ...lech.map(x => `${ten(items.find(y => y.i === x.i))}: lệch quá ${maxPct}% (${x.p}), chưa ghi`),
+      ...(lines.length ? g.thieu.map(x => `${ten(x)}: không thấy trên trang`) : []), // không đọc được giá nào thì lỗi đã nêu ở trên
+    ];
+    const kq = `${trang.length} trang · ${lines.length} giá · ${g.gia.length} món khớp · ghi ${doi.length} món đổi giá · ${canXem.length} việc cho Gemini · 0 token`;
+    cfg.getRange('A4:C5').setValues([['Lần quét cuối', gio(), kq], ['Cần Gemini xem', canXem.length, canXem.join('\n') || '—']]);
+    console.log(kq + (canXem.length ? '\n' + canXem.join('\n') : ''));
+  } catch (e) {
+    // Không để báo cáo của lần quét trước trông như của hôm nay.
+    cfg.getRange('A4:C5').setValues([['Lần quét cuối', gio(), 'LỖI: ' + e.message], ['Cần Gemini xem', 1, 'Quét lỗi: ' + e.message]]);
+    throw e;
   }
-  if (!changes) throw loi;
-  const ngay = Utilities.formatDate(new Date(), TZ, 'dd/MM/yyyy'); // chuỗi → sheet vi_VN tự hiểu là ngày
-  const doi = locThayDoi(rows, c, changes, Number(nguong) || 30);
-  doi.forEach(d => {
-    sh.getRange(d.n, c.gia + 1).setValue(d.p);
-    if (c.cu >= 0) sh.getRange(d.n, c.cu + 1).setValue(d.old);
-    if (c.ngay >= 0) sh.getRange(d.n, c.ngay + 1).setValue(ngay);
-  });
-  if (doi.length) {
-    const log = ss.getSheetByName(TAB_LOG);
-    const add = doi.map(d => [ngay, d.r[c.series] || '', d.r[c.model], d.r[c.dl], d.r[c.tt], d.old, d.p, d.p - d.old, d.u || urls[0]]);
-    log.getRange(log.getLastRow() + 1, 1, add.length, add[0].length).setValues(add);
-  }
-  console.log(`Gemini báo ${changes.length} món đổi, đã ghi ${doi.length}.`);
 }
 
 function cot(head) {
@@ -62,22 +79,66 @@ function cot(head) {
            gia: f(/giá bán|^giá$/i), cu: f(/giá cũ/i), ngay: f(/ngày/i) };
 }
 
-function goiGemini(key, model, prompt) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-  // Chỉ đọc đúng trang nguồn (url_context), không tìm Google: rẻ hơn và không dính hạn mức tìm kiếm.
-  const body = { contents: [{ parts: [{ text: prompt }] }], tools: [{ url_context: {} }],
-                 generationConfig: { thinkingConfig: { thinkingLevel: 'low' } } };
-  const call = b => UrlFetchApp.fetch(url, { method: 'post', contentType: 'application/json', headers: { 'x-goog-api-key': key },
-                                             muteHttpExceptions: true, payload: JSON.stringify(b) });
-  let res = call(body);
-  if (res.getResponseCode() === 400) { delete body.generationConfig; res = call(body); } // model không hỗ trợ thinkingLevel
-  if (res.getResponseCode() !== 200) throw new Error(`Gemini lỗi ${res.getResponseCode()}: ${res.getContentText().slice(0, 300)}`);
-  const parts = ((JSON.parse(res.getContentText()).candidates || [])[0] || {}).content?.parts || [];
-  const m = parts.map(p => p.text || '').join('').match(/\[[\s\S]*\]/);
-  return m ? JSON.parse(m[0]) : [];
+/* ---------- đọc tam300.com ---------- */
+const giaiMa = s => String(s).replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+  .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(n)).replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&');
+
+// Link các trang dòng máy từ trang chủ: /iphone/iphone-16-series ...
+function timTrang(html, goc) {
+  const out = [];
+  (String(html).match(/href="(\/iphone\/[^"#?]+)"/g) || []).forEach(h => { const u = goc + h.slice(6, -1); if (out.indexOf(u) < 0) out.push(u); });
+  return out;
 }
 
-// Giữ lại món thật sự đổi giá; bỏ món lệch quá ngưỡng % (Gemini đọc nhầm).
+// "20,9 triệu" → 20900000 · "950k" → 950000 · "4 triệu" → 4000000 · "20.900.000đ" → 20900000
+function soTien(s) {
+  s = String(s).toLowerCase().replace(/\s/g, '');
+  if (/^\d[\d.,]*(đ|₫|vnđ|vnd)?$/.test(s)) return Number(s.replace(/\D/g, '')) || null;
+  const m = s.match(/^(\d+(?:[.,]\d+)?)(triệu|tr|k|nghìn|ngàn)$/); if (!m) return null; // "17tr2" → null, để Gemini xem chứ không đoán
+  return Math.round(Number(m[1].replace(',', '.')) * (/^(k|nghìn|ngàn)$/.test(m[2]) ? 1e3 : 1e6));
+}
+
+// HTML một trang dòng máy → [{ten:"iPhone 16 Pro Max zin… 256GB", p: giá thấp nhất theo màu}]
+function docTam300(html) {
+  const out = [], re = /<article[^>]*data-offers="([^"]*)"[^>]*>([\s\S]*?)<\/article>/g;
+  let m;
+  while ((m = re.exec(html))) {
+    let title = giaiMa(m[2].replace(/<[^>]+>/g, '|')).split('|').map(s => s.trim()).filter(Boolean)[0] || '';
+    if (!/iphone/i.test(title)) title = 'iPhone ' + title;
+    const min = {};
+    JSON.parse(giaiMa(m[1])).forEach(o => { const p = soTien(o.price); if (p && (!min[o.capacity] || p < min[o.capacity])) min[o.capacity] = p; });
+    Object.keys(min).forEach(cap => out.push({ ten: `${title} ${cap}`, p: min[cap] }));
+  }
+  return out;
+}
+
+/* ---------- ghép tên với sheet ---------- */
+const boDau = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd');
+// "iPhone 15 Pro Max zin nguyên bản 256GB" → "15 pro max|256gb"
+function khoa(s) {
+  s = boDau(s).replace(/\s+/g, ' ');
+  const m = s.match(/iphone ?(\d{1,2}|xs max|xs|xr|x)\b(?: (pro max|pro|plus|mini)\b)?/), d = s.match(/(\d+) ?(gb|tb)/);
+  return m && d ? `${m[1]}${m[2] ? ' ' + m[2] : ''}|${d[1]}${d[2]}` : null;
+}
+// Máy mới (newseal, chưa kích hoạt) không được ghép với giá máy cũ và ngược lại.
+const loai = s => { s = boDau(s); return /like|\bcu\b|99|2nd|da kich hoat|qua su dung|doi tra/.test(s) ? 'cu' : /new|seal|\bmoi\b|chua kich hoat/.test(s) ? 'moi' : 'cu'; };
+
+// → gia: [{i,p,u}] khớp chắc · mo: [{x,cands}] một món có nhiều giá · thieu: món không có trên trang
+function ghepGia(items, lines, c) {
+  const by = {};
+  lines.forEach(l => { const k = khoa(l.ten); if (k) { const kk = k + '|' + loai(l.ten); (by[kk] = by[kk] || []).push(l); } });
+  const gia = [], mo = [], thieu = [];
+  items.forEach(x => {
+    const k = khoa(`${x.r[c.model]} ${x.r[c.dl]}`); if (!k) return thieu.push(x);
+    const cands = by[k + '|' + loai(x.r[c.tt])] || [], ps = cands.map(l => l.p).filter((p, j, a) => a.indexOf(p) === j);
+    if (ps.length === 1) gia.push({ i: x.i, p: ps[0], u: cands[0].u });
+    else if (ps.length > 1) mo.push({ x, cands });
+    else thieu.push(x);
+  });
+  return { gia, mo, thieu };
+}
+
+// Giữ lại món thật sự đổi giá; bỏ món lệch quá ngưỡng % (đọc nhầm / ghép nhầm).
 function locThayDoi(rows, c, changes, maxPct) {
   const out = [], seen = {};
   (changes || []).forEach(({ i, p, u }) => {
@@ -90,4 +151,4 @@ function locThayDoi(rows, c, changes, maxPct) {
   return out;
 }
 
-if (typeof module !== 'undefined') module.exports = { cot, locThayDoi };
+if (typeof module !== 'undefined') module.exports = { quetGia, cot, locThayDoi, timTrang, soTien, docTam300, khoa, loai, ghepGia };
