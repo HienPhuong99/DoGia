@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bảng giá iPhone</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--text:#16181d;--muted:#6b7280;--line:#e5e7eb;--accent:#0b57d0;--down:#047857;--down-bg:#d1fae5;--up:#b91c1c;--up-bg:#fee2e2;--new:#92400e;--new-bg:#fef3c7}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#181b21;--text:#e8eaed;--muted:#9aa0a6;--line:#2a2e36;--accent:#8ab4f8;--down:#6ee7b7;--down-bg:#064e3b;--up:#fca5a5;--up-bg:#7f1d1d;--new:#fcd34d;--new-bg:#78350f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:960px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+.warn{background:var(--new-bg);color:var(--new);padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+input,select,button{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+input{flex:1;min-width:180px}
+button{cursor:pointer}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.chip{white-space:nowrap;border-radius:999px;padding:6px 12px;font-size:13px}
+.chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.price{font-weight:700}
+.old{color:var(--muted);text-decoration:line-through;font-size:13px}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;font-weight:600;white-space:nowrap}
+.down{background:var(--down-bg);color:var(--down)}
+.up{background:var(--up-bg);color:var(--up)}
+.new{background:var(--new-bg);color:var(--new);margin-left:6px}
+.muted{color:var(--muted)}
+.empty{text-align:center;color:var(--muted);padding:24px}
+@media (max-width:640px){
+  thead{display:none}
+  table,tbody,tr,td{display:block;width:100%}
+  table{border:0;background:none}
+  tr{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:2px 12px}
+  td{border:0;padding:0}
+  td.c-model{font-weight:600}
+  td.c-series{display:none}
+  td.num{grid-column:2}
+  td.c-spec{grid-column:1;color:var(--muted);font-size:13px}
+  td.c-date{grid-column:1;font-size:12px}
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>Bảng giá iPhone</h1>
+  <div class="sub" id="status">Đang tải…</div>
+  <div class="warn" id="warn" hidden></div>
+  <div class="bar">
+    <input id="q" type="search" placeholder="Tìm model, dung lượng… (vd: 15 pro 256)">
+    <select id="sort" aria-label="Sắp xếp">
+      <option value="">Thứ tự gốc</option>
+      <option value="asc">Giá thấp → cao</option>
+      <option value="desc">Giá cao → thấp</option>
+      <option value="drop">Giảm giá nhiều nhất</option>
+      <option value="date">Mới cập nhật</option>
+    </select>
+    <button id="reload" type="button">Tải lại</button>
+  </div>
+  <div class="chips" id="chips"></div>
+  <table>
+    <thead><tr><th>Dòng</th><th>Model</th><th>Dung lượng / Tình trạng</th><th class="num">Giá bán</th><th class="num">Thay đổi</th><th>Cập nhật</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+</main>
+<script>
+// Sheet phải bật "Bất kỳ ai có đường liên kết đều có thể xem" thì trang mới lấy được dữ liệu trực tiếp.
+const SHEET_ID = '1pXlE41ArlhpHfkVwq83HpsHe2Y5-L6EhdHxBrqOkNdY';
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=0`;
+const REFRESH_MS = 5 * 60 * 1000;
+const NEW_DAYS = 3; // gắn nhãn "Mới" nếu cập nhật trong N ngày
+
+// Bản chụp ngày 18/11/2026 — dùng khi không đọc được sheet.
+const SNAPSHOT = [["iPhone 17 Series","iPhone 17 Pro Max","256GB","Newseal VNA","32.900.000","33.900.000","24/10/2026"],["iPhone 16 Series","iPhone 16 Pro Max","512GB","Likenew","24.300.000","25.000.000","24/10/2026"],["iPhone 16 Series","iPhone 16 Pro Max","256GB","Likenew","20.900.000","21.400.000","18/11/2026"],["iPhone 16 Series","iPhone 16 Pro","256GB","Likenew","19.500.000","20.000.000","24/10/2026"],["iPhone 16 Series","iPhone 16 Pro","128GB","Likenew","17.200.000","17.700.000","18/11/2026"],["iPhone 15 Series","iPhone 15 Pro Max","512GB","Likenew","19.900.000","20.000.000","24/10/2026"],["iPhone 15 Series","iPhone 15 Pro Max","256GB","Likenew","17.700.000","18.000.000","15/11/2026"],["iPhone 15 Series","iPhone 15 Pro","256GB","Likenew","16.000.000","16.100.000","24/10/2026"],["iPhone 15 Series","iPhone 15 Pro","128GB","Likenew","14.500.000","14.700.000","05/11/2026"],["iPhone 15 Series","iPhone 15 Plus","256GB","Likenew","14.000.000","14.300.000","24/10/2026"],["iPhone 15 Series","iPhone 15 Plus","128GB","Likenew","12.800.000","13.100.000","24/10/2026"],["iPhone 15 Series","iPhone 15","256GB","Likenew","12.100.000"],["iPhone 15 Series","iPhone 15","128GB","Likenew","10.900.000"],["iPhone 14 Series","iPhone 14 Pro Max","256GB","Likenew","15.500.000","15.800.000","12/11/2026"],["iPhone 14 Series","iPhone 14 Pro Max","128GB","Likenew","14.300.000","14.600.000","12/11/2026"],["iPhone 14 Series","iPhone 14 Pro","256GB","Likenew","13.200.000","13.300.000","04/11/2026"],["iPhone 14 Series","iPhone 14 Pro","128GB","Likenew","12.000.000","12.200.000","04/11/2026"],["iPhone 14 Series","iPhone 14 Plus","256GB","Likenew","10.900.000"],["iPhone 14 Series","iPhone 14 Plus","128GB","Likenew","9.900.000"],["iPhone 14 Series","iPhone 14","256GB","Likenew","9.200.000","9.500.000","24/10/2026"],["iPhone 14 Series","iPhone 14","128GB","Likenew","8.200.000","8.500.000","24/10/2026"],["iPhone 13 Series","iPhone 13","256GB","Likenew","8.400.000","8.700.000","24/10/2026"],["iPhone 13 Series","iPhone 13","128GB","Likenew","7.500.000","7.800.000","24/10/2026"],["iPhone 12 Series","iPhone 12 Pro Max","256GB","Likenew","10.200.000","10.500.000","24/10/2026"],["iPhone 12 Series","iPhone 12 Pro Max","128GB","Likenew","9.300.000","9.600.000","24/10/2026"],["iPhone 12 Series","iPhone 12 Pro","256GB","Likenew","8.300.000"],["iPhone 12 Series","iPhone 12 Pro","128GB","Likenew","7.500.000"],["iPhone 12 Series","iPhone 12","128GB","Likenew","5.800.000"],["iPhone 12 Series","iPhone 12","64GB","Likenew","5.200.000"],["iPhone 11 Series","iPhone 11 Pro Max","256GB","Likenew","7.000.000"],["iPhone 11 Series","iPhone 11 Pro Max","64GB","Likenew","6.100.000","6.300.000","17/11/2026"],["iPhone 11 Series","iPhone 11 Pro","256GB","Likenew","5.600.000"],["iPhone 11 Series","iPhone 11 Pro","64GB","Likenew","4.700.000","4.900.000","17/11/2026"],["iPhone 11 Series","iPhone 11","256GB","Likenew","5.200.000"],["iPhone 11 Series","iPhone 11","128GB","Likenew","4.700.000"],["iPhone 11 Series","iPhone 11","64GB","Likenew","4.000.000","4.200.000","17/11/2026"],["iPhone X Series","iPhone XS Max","256GB","Likenew","4.900.000","5.200.000","08/11/2026"],["iPhone X Series","iPhone XS Max","64GB","Likenew","4.200.000","4.500.000","08/11/2026"],["iPhone X Series","iPhone XS","256GB","Likenew","3.800.000","4.000.000","08/11/2026"],["iPhone X Series","iPhone XS","64GB","Likenew","3.200.000","3.400.000","08/11/2026"]];
+
+const $ = id => document.getElementById(id);
+const money = n => n.toLocaleString('vi-VN') + 'đ';
+const toNum = s => { const d = String(s || '').replace(/\D/g, ''); return d ? +d : null; };
+const toDate = s => { const m = String(s || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/); return m ? new Date(m[3], m[2] - 1, m[1]) : null; };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+// CSV có ngoặc kép (dạng gviz trả về)
+function parseCSV(text) {
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; } else if (c === '"') q = false; else cell += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(cell); cell = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += c;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
+
+let items = [], series = '';
+function load(raw) {
+  items = raw.filter(r => r[1] && toNum(r[4])).map((r, i) => {
+    const price = toNum(r[4]), old = toNum(r[5]);
+    return { i, series: r[0], model: r[1], cap: r[2], cond: r[3], price, old,
+      diff: old ? price - old : 0, dateStr: r[6] || '', date: toDate(r[6]) };
+  });
+  const all = [...new Set(items.map(x => x.series))];
+  if (series && !all.includes(series)) series = '';
+  $('chips').innerHTML = ['', ...all].map(s =>
+    `<button class="chip" type="button" data-s="${esc(s)}" aria-pressed="${s === series}">${esc(s || 'Tất cả')}</button>`).join('');
+  render();
+}
+
+function render() {
+  const words = norm($('q').value).split(/\s+/).filter(Boolean);
+  let list = items.filter(x => (!series || x.series === series) &&
+    words.every(w => norm(`${x.model} ${x.cap} ${x.cond}`).includes(w)));
+  const s = $('sort').value;
+  const cmp = { asc: (a, b) => a.price - b.price, desc: (a, b) => b.price - a.price,
+    drop: (a, b) => a.diff - b.diff, date: (a, b) => (b.date || 0) - (a.date || 0) }[s] || ((a, b) => a.i - b.i);
+  list.sort(cmp);
+  const cutoff = Date.now() - NEW_DAYS * 864e5;
+  $('rows').innerHTML = list.length ? list.map(x => `<tr>
+    <td class="c-series muted">${esc(x.series)}</td>
+    <td class="c-model">${esc(x.model)}${x.date && x.date >= cutoff ? '<span class="tag new">Mới</span>' : ''}</td>
+    <td class="c-spec">${esc(x.cap)} · ${esc(x.cond)}</td>
+    <td class="num"><div class="price">${money(x.price)}</div>${x.old && x.old !== x.price ? `<div class="old">${money(x.old)}</div>` : ''}</td>
+    <td class="num">${x.diff ? `<span class="tag ${x.diff < 0 ? 'down' : 'up'}">${x.diff < 0 ? '↓' : '↑'} ${money(Math.abs(x.diff))}</span>` : '<span class="muted">—</span>'}</td>
+    <td class="c-date muted">${esc(x.dateStr)}</td></tr>`).join('')
+    : '<tr><td class="empty" colspan="6">Không có máy phù hợp</td></tr>';
+}
+
+async function refresh() {
+  $('status').textContent = 'Đang tải…';
+  try {
+    const res = await fetch(CSV_URL + '&_=' + Date.now());
+    const text = await res.text();
+    if (!res.ok || text.trimStart().startsWith('<')) throw new Error('Sheet chưa chia sẻ công khai');
+    load(parseCSV(text).slice(1));
+    $('warn').hidden = true;
+    $('status').textContent = `${items.length} mẫu · cập nhật trực tiếp từ Google Sheet lúc ${new Date().toLocaleTimeString('vi-VN')}`;
+  } catch (e) {
+    if (!items.length) load(SNAPSHOT);
+    $('warn').hidden = false;
+    $('warn').textContent = `Không đọc được Google Sheet (${e.message}). Đang hiển thị dữ liệu chụp ngày 18/11/2026.`;
+    $('status').textContent = `${items.length} mẫu`;
+  }
+}
+
+$('q').addEventListener('input', render);
+$('sort').addEventListener('change', render);
+$('reload').addEventListener('click', refresh);
+$('chips').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  series = b.dataset.s;
+  document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c === b));
+  render();
+});
+refresh();
+setInterval(refresh, REFRESH_MS);
+</script>
+</body>
+</html>
