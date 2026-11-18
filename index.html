@@ -166,7 +166,14 @@ dialog .card::before{display:none}
 dialog::backdrop{background:rgba(0,0,0,.22);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .dlg{padding:20px}
 .dlg-h{display:flex;justify-content:space-between;gap:12px;align-items:start;margin-bottom:10px}
-.big{font-size:34px;font-weight:700;letter-spacing:-.025em;margin:6px 0}
+.big-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 12px;margin:6px 0}
+.big{font-size:34px;font-weight:700;letter-spacing:-.025em;margin:0;font-variant-numeric:tabular-nums}
+.cmp15-btn{font-size:13px;padding:6px 12px}
+.cmp15-card .ev{grid-template-columns:1fr auto}
+.cmp15-opts{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.cmp15-pill{border-radius:999px;padding:4px 10px;font-size:12px;font-weight:500;background:var(--card,rgba(255,255,255,.5));border:1px solid var(--line);transition:scale .4s var(--spring),background .2s}
+.cmp15-pill[aria-pressed=true]{background:var(--accent);color:#fff;border-color:transparent;font-weight:600}
+.cmp15-total{font-size:18px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:12px 0}
 .stats div{background:var(--track);border-radius:16px;padding:9px 12px}
 .stats span{display:block;font-size:12px;color:var(--muted)}
@@ -192,6 +199,7 @@ h1{font-size:26px} .scrolled h1{font-size:18px} .scrolled .upd{display:none}
 #track th,#track td{padding:9px 8px}
 .show-m{display:flex;flex-direction:column;align-items:flex-end;gap:4px} .pcell{min-width:0} .hide-m{display:none}
 .ev{grid-template-columns:1fr auto}.ev span:first-child{grid-column:1/-1;color:var(--muted);font-size:12px}
+.cmp15-card .ev span:first-child{grid-column:auto;color:var(--muted);font-size:13px}
 .bar{grid-template-columns:1fr auto}.bl{grid-column:1/-1}
 dialog{width:100%;max-width:100%;max-height:92dvh;margin:auto 0 0;border-radius:30px 30px 0 0;border-bottom:0}
 dialog[open]{animation:sheet .5s var(--out)}
@@ -268,7 +276,8 @@ const RANGES = [[7, '7 ngày'], [30, '30 ngày'], [90, '90 ngày'], [0, 'Tất c
 const DAY = 864e5, TOP = 15, NEW_DAYS = 3, LOG_TAB = 'Biến động';
 const today = new Date(); today.setHours(0, 0, 0, 0);
 const S = { link: '', id: '', gid: '0', headers: [], rows: [], cols: [], role: {}, log: null,
-  q: '', group: '', watchOnly: false, sortK: 'chg', sortDir: 1, rawJ: null, rawDir: 1, range: 30, watch: new Set(), items: [], open: null };
+  q: '', group: '', watchOnly: false, sortK: 'chg', sortDir: 1, rawJ: null, rawDir: 1, range: 30, watch: new Set(), items: [], open: null,
+  cmp15Open: false, cmp15Key: '', cmp15Fee: 'ext' };
 
 /* ---------- tiện ích ---------- */
 const $ = id => document.getElementById(id);
@@ -588,19 +597,62 @@ function renderRaw(rows) {
     || `<tr><td colspan="${cols.length}" class="sub">Không có dòng phù hợp</td></tr>`;
 }
 
+const TAM300_FEES = [
+  ['ext', 'Máy ngoài / hết BH (+300k–500k)', 300000, 500000],
+  ['bh', 'TAM300 còn BH (+300k)', 300000, 300000],
+  ['6m', 'Dùng 6 tháng (+150k–250k)', 150000, 250000],
+];
+function find15ProMaxList(targetItem) {
+  const list = S.items.filter(x => /15\s*pro\s*max/i.test(x.label)).slice().sort((a, b) => a.v - b.v);
+  if (!list.length) return { list: [], pick: null };
+  let pick = list.find(x => x.key === S.cmp15Key);
+  if (!pick && targetItem) {
+    const capM = targetItem.label.match(/\b(\d+\s*(?:GB|TB))\b/i);
+    if (capM) pick = list.find(x => new RegExp(`\\b${capM[1].replace(/\s+/g, '\\s*')}\\b`, 'i').test(x.label));
+  }
+  if (!pick) pick = list.find(x => x.key !== targetItem?.key) || list[0];
+  return { list, pick };
+}
+
 /* ---------- chi tiết một sản phẩm (kiểu camelcamelcamel) ---------- */
 function openDetail(key, refresh) {
   const i = S.items.find(x => x.key === key); if (!i) { $('dlg').close(); return; }
+  if (S.open !== key) S.cmp15Key = '';
   S.open = key;
   const t0 = periodStart(); withPeriod([i], t0);
   const sameGrp = S.items.filter(x => x.group === i.group);
   const verdict = i.hi === i.lo ? ['', 'Chưa ghi nhận thay đổi giá'] : i.v <= i.lo ? ['down', 'Giá thấp nhất từng ghi nhận']
     : i.v >= i.hi ? ['up', 'Giá cao nhất từng ghi nhận'] : i.v < i.mean ? ['down', `Thấp hơn mức trung bình ${pct((i.v - i.mean) / i.mean)}`] : ['up', `Cao hơn mức trung bình ${pct((i.v - i.mean) / i.mean)}`];
   const ev = i.pts.map((x, k) => ({ ...x, prev: k ? i.pts[k - 1].p : null })).reverse();
+  const { list: pm15List, pick: pm15 } = find15ProMaxList(i);
+  let cmp15Html = '';
+  if (pm15 && S.cmp15Open) {
+    const [, , feeMin, feeMax] = TAM300_FEES.find(f => f[0] === S.cmp15Fee) || TAM300_FEES[0];
+    const diff = i.v - pm15.v, payMin = diff + feeMin, payMax = diff + feeMax;
+    const payText = payMax <= 0
+      ? `Không cần bù (15PM cao hơn ${fmt(Math.abs(payMax))}${payMin < payMax ? ' – ' + fmt(Math.abs(payMin)) : ''})`
+      : payMin <= 0 ? `0 – ${fmt(payMax)}` : `${fmt(payMin)}${payMax > payMin ? ' – ' + fmt(payMax) : ''}`;
+    cmp15Html = `<section class="card cmp15-card" style="margin-top:12px">
+      <h3>So sánh &amp; tính giá bù từ 15 Pro Max <small><a href="https://tam300.com/thu-mua" target="_blank" rel="noopener">Chính sách TAM300 ↗</a></small></h3>
+      ${pm15List.length > 1 ? `<div class="cmp15-opts">${pm15List.map(x => {
+        const cap = (x.label.match(/\b(\d+\s*(?:GB|TB))\b/i) || ['', x.label])[1];
+        return `<button type="button" class="cmp15-pill" data-pm15="${esc(x.key)}" aria-pressed="${x.key === pm15.key}">15PM ${esc(cap)} (${fmtC(x.v)})</button>`;
+      }).join('')}</div>` : ''}
+      <div class="cmp15-opts">${TAM300_FEES.map(([id, lbl]) =>
+        `<button type="button" class="cmp15-pill" data-fee="${id}" aria-pressed="${id === S.cmp15Fee}">${lbl}</button>`).join('')}</div>
+      <div class="ev"><span>Giá ${esc(i.label)}</span><b class="n">${fmt(i.v)}</b></div>
+      <div class="ev"><span>Thu ${esc(pm15.label)} (100% giá bán)</span><span class="n" style="color:var(--down)">−${fmt(pm15.v)}</span></div>
+      <div class="ev"><span>Chênh lệch 2 máy</span><span class="n">${diff >= 0 ? '+' : '−'}${fmt(Math.abs(diff))}</span></div>
+      <div class="ev"><span>Phí dịch vụ TAM300</span><span class="n">+${fmt(feeMin)}${feeMax > feeMin ? ' – ' + fmt(feeMax) : ''}</span></div>
+      <div class="ev"><b>Tổng tiền bù dự kiến</b><span class="n cmp15-total">${payText}</span></div>
+      <div class="more">Theo tam300.com/thu-mua: thu máy bằng 100% giá bán công khai; chưa gồm chênh lệch phụ phí pin hoặc ngoại hình thực tế.</div>
+    </section>`;
+  }
   $('dlgBody').innerHTML = `<div class="dlg-h"><div><div class="pgrp">${esc(i.group)}</div><h2>${esc(i.label)}</h2></div>
       <button type="button" class="btn icon" id="dlgClose" aria-label="Đóng">✕</button></div>
-    <div class="big">${fmt(i.v)}</div>
+    <div class="big-row"><div class="big">${fmt(i.v)}</div>${pm15 ? `<button type="button" class="btn cmp15-btn${S.cmp15Open ? ' tint' : ''}" id="cmp15Btn" aria-expanded="${S.cmp15Open}">⇄ So với 15 Pro Max</button>` : ''}</div>
     <div class="row">${chg(i.chg, i.base)} <span class="verdict ${verdict[0]}">${verdict[1]}</span></div>
+    ${cmp15Html}
     <div class="stats"><div><span>Thấp nhất</span><b>${fmt(i.lo)}</b></div><div><span>Cao nhất</span><b>${fmt(i.hi)}</b></div>
       <div><span>Trung bình</span><b>${fmt(Math.round(i.mean))}</b></div><div><span>Số lần đổi giá</span><b>${i.changes}</b></div>
       <div><span>Đổi giá lần cuối</span><b>${i.lastT && i.changes ? fmtD(i.lastT) : '—'}</b></div></div>
@@ -698,6 +750,9 @@ document.addEventListener('click', e => {
   const th = t.closest('#tHead th'); if (th) { const k = th.dataset.k; if (k === 'star' || k === 'spark') return; S.sortDir = S.sortK === k ? -S.sortDir : 1; S.sortK = k; render(); return; }
   const rh = t.closest('#rHead th'); if (rh) { const j = +rh.dataset.j; S.rawDir = S.rawJ === j ? -S.rawDir : 1; S.rawJ = j; render(); return; }
   const row = t.closest('#tBody tr[data-k], .mv[data-k]'); if (row) { openDetail(row.dataset.k); return; }
+  if (t.id === 'cmp15Btn' && S.open) { S.cmp15Open = !S.cmp15Open; openDetail(S.open, true); return; }
+  const pm15Btn = t.closest('[data-pm15]'); if (pm15Btn && S.open) { S.cmp15Key = pm15Btn.dataset.pm15; openDetail(S.open, true); return; }
+  const feeBtn = t.closest('[data-fee]'); if (feeBtn && S.open) { S.cmp15Fee = feeBtn.dataset.fee; openDetail(S.open, true); return; }
   if (t.id === 'dlgClose' || t === $('dlg')) $('dlg').close();
 });
 $('dlg').addEventListener('close', () => { S.open = null; $('tip').style.display = 'none'; });
