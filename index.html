@@ -287,7 +287,8 @@ const DAY = 864e5, TOP = 15, NEW_DAYS = 3, LOG_TAB = 'Biến động';
 const today = new Date(); today.setHours(0, 0, 0, 0);
 const S = { link: '', id: '', gid: '0', headers: [], rows: [], cols: [], role: {}, log: null,
   q: '', group: '', watchOnly: false, sortK: 'chg', sortDir: 1, rawJ: null, rawDir: 1, range: 30, watch: new Set(), items: [], open: null,
-  cmp15Open: false, cmp15Key: '', cmp15Fee: 'ext' };
+  cmp15Open: false, cmp15Key: '', cmp15Fee: 'ext',
+  pm15Live: { items: [], at: 0, loading: false, err: false } };
 
 /* ---------- tiện ích ---------- */
 const $ = id => document.getElementById(id);
@@ -623,16 +624,80 @@ const TAM300_FEES = [
   ['bh', 'TAM300 còn BH (+300k)', 300000, 300000],
   ['6m', 'Dùng 6 tháng (+150k–250k)', 150000, 250000],
 ];
+const capMb = s => { const m = String(s || '').match(/(\d+)\s*(GB|TB)/i); return m ? +m[1] * (/tb/i.test(m[2]) ? 1024 : 1) : 0; };
+const capStr = s => (String(s || '').match(/\b(\d+\s*(?:GB|TB))\b/i) || ['', ''])[1].replace(/\s+/g, '').toUpperCase();
+function parseTamPrice(s) {
+  const t = String(s ?? '').trim();
+  const tr = t.match(/(\d+(?:[.,]\d+)?)\s*tri[eệ]u/i);
+  if (tr) return Math.round(parseFloat(tr[1].replace(',', '.')) * 1e6);
+  const n = num(t);
+  return n && n >= 1e6 ? Math.round(n) : null;
+}
+let pm15Inflight = null;
+async function fetch15PmLive(force) {
+  const L = S.pm15Live;
+  if (!force && L.at && Date.now() - L.at < 3e5 && L.items.length) return L.items;
+  if (pm15Inflight) return pm15Inflight;
+  L.loading = true; L.err = false;
+  pm15Inflight = (async () => {
+    try {
+      const res = await fetch(`https://tam300.com/iphone/iphone-15-series?_=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) throw 0;
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const cards = [...doc.querySelectorAll('article[data-product-card]')];
+      const card = cards.find(a => {
+        const title = a.querySelector('h1,h2,h3,a,.font-semibold,.title')?.textContent || a.textContent.slice(0, 120);
+        return /15\s*Pro\s*Max/i.test(title);
+      });
+      if (!card) throw 0;
+      const offers = JSON.parse(card.getAttribute('data-offers') || '[]');
+      const grouped = new Map();
+      for (const o of offers) {
+        const v = parseTamPrice(o.price), cap = capStr(o.capacity || '256GB') || '256GB';
+        if (!v) continue;
+        const k = `${cap}|${v}`;
+        if (!grouped.has(k)) grouped.set(k, { key: `live|${k}`, cap, capN: capMb(cap), colors: [], v, live: true });
+        if (o.color && !grouped.get(k).colors.includes(o.color)) grouped.get(k).colors.push(o.color);
+      }
+      const list = [...grouped.values()].sort((a, b) => a.capN - b.capN || a.v - b.v).map(x => {
+        const col = x.colors.join('/');
+        return {
+          ...x,
+          label: `iPhone 15 Pro Max · ${x.cap}${col ? ' · ' + col : ''}`,
+          pill: `${x.cap}${col ? ' ' + col : ''} (${fmtC(x.v)})`,
+        };
+      });
+      if (!list.length) throw 0;
+      L.items = list; L.at = Date.now(); L.err = false;
+    } catch {
+      L.err = true;
+    } finally {
+      L.loading = false; pm15Inflight = null;
+      if (S.open && $('dlg').open && S.cmp15Open) openDetail(S.open, true);
+    }
+    return L.items;
+  })();
+  return pm15Inflight;
+}
 function find15ProMaxList(targetItem) {
-  const list = S.items.filter(x => /15\s*pro\s*max/i.test(x.label)).slice().sort((a, b) => a.v - b.v);
-  if (!list.length) return { list: [], pick: null };
+  const sheetList = S.items.filter(x => /15\s*pro\s*max/i.test(x.label)).map(x => {
+    const cap = capStr(x.label);
+    return { key: x.key, cap, capN: capMb(cap), v: x.v, label: x.label, pill: `${cap || x.label} (${fmtC(x.v)})`, live: false };
+  }).sort((a, b) => a.capN - b.capN || a.v - b.v);
+  const usingLive = S.pm15Live.items.length > 0;
+  const list = (usingLive ? S.pm15Live.items : sheetList).map(x => {
+    const sameCapSheet = sheetList.find(s => s.cap && s.cap === x.cap);
+    return sameCapSheet ? { ...x, sheetV: sameCapSheet.v } : x;
+  });
+  if (!list.length) return { list: [], pick: null, usingLive: false };
   let pick = list.find(x => x.key === S.cmp15Key);
   if (!pick && targetItem) {
-    const capM = targetItem.label.match(/\b(\d+\s*(?:GB|TB))\b/i);
-    if (capM) pick = list.find(x => new RegExp(`\\b${capM[1].replace(/\s+/g, '\\s*')}\\b`, 'i').test(x.label));
+    const cap = capStr(targetItem.label);
+    if (cap) pick = list.find(x => x.cap === cap);
   }
   if (!pick) pick = list.find(x => x.key !== targetItem?.key) || list[0];
-  return { list, pick };
+  return { list, pick, usingLive };
 }
 
 /* ---------- chi tiết một sản phẩm (kiểu camelcamelcamel) ---------- */
@@ -640,12 +705,13 @@ function openDetail(key, refresh) {
   const i = S.items.find(x => x.key === key); if (!i) { $('dlg').close(); return; }
   if (S.open !== key) S.cmp15Key = '';
   S.open = key;
+  if (!S.pm15Live.at && !pm15Inflight) fetch15PmLive();
   const t0 = periodStart(); withPeriod([i], t0);
   const sameGrp = S.items.filter(x => x.group === i.group);
   const verdict = i.hi === i.lo ? ['', 'Chưa ghi nhận thay đổi giá'] : i.v <= i.lo ? ['down', 'Giá thấp nhất từng ghi nhận']
     : i.v >= i.hi ? ['up', 'Giá cao nhất từng ghi nhận'] : i.v < i.mean ? ['down', `Thấp hơn mức trung bình ${pct((i.v - i.mean) / i.mean)}`] : ['up', `Cao hơn mức trung bình ${pct((i.v - i.mean) / i.mean)}`];
   const ev = i.pts.map((x, k) => ({ ...x, prev: k ? i.pts[k - 1].p : null })).reverse();
-  const { list: pm15List, pick: pm15 } = find15ProMaxList(i);
+  const { list: pm15List, pick: pm15, usingLive } = find15ProMaxList(i);
   let cmp15Html = '';
   if (pm15 && S.cmp15Open) {
     const [, , feeMin, feeMax] = TAM300_FEES.find(f => f[0] === S.cmp15Fee) || TAM300_FEES[0];
@@ -653,12 +719,18 @@ function openDetail(key, refresh) {
     const payText = payMax <= 0
       ? `Không cần bù (15PM cao hơn ${fmt(Math.abs(payMax))}${payMin < payMax ? ' – ' + fmt(Math.abs(payMin)) : ''})`
       : payMin <= 0 ? `0 – ${fmt(payMax)}` : `${fmt(payMin)}${payMax > payMin ? ' – ' + fmt(payMax) : ''}`;
+    const minLiveSameCap = pm15List.find(x => x.cap === pm15.cap)?.v;
+    const sheetDiffNote = usingLive && pm15.sheetV && minLiveSameCap && pm15.sheetV !== minLiveSameCap
+      ? ` · Sheet đang ghi ${fmt(pm15.sheetV)} (đã lấy giá thực tế mới nhất)` : '';
+    const srcNote = usingLive
+      ? `Giá thực tế từ tam300.com (${S.pm15Live.at ? new Date(S.pm15Live.at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'vừa xong'})${sheetDiffNote}`
+      : (S.pm15Live.loading ? 'Đang lấy giá thực tế 15PM từ tam300.com… (tạm dùng giá Sheet)' : 'Tạm dùng giá trong Sheet (không tải được tam300.com trực tiếp)');
     cmp15Html = `<section class="card cmp15-card" style="margin-top:12px">
       <h3>So sánh &amp; tính giá bù từ 15 Pro Max <small><a href="https://tam300.com/thu-mua" target="_blank" rel="noopener">Chính sách TAM300 ↗</a></small></h3>
-      ${pm15List.length > 1 ? `<div class="cmp15-opts">${pm15List.map(x => {
-        const cap = (x.label.match(/\b(\d+\s*(?:GB|TB))\b/i) || ['', x.label])[1];
-        return `<button type="button" class="cmp15-pill" data-pm15="${esc(x.key)}" aria-pressed="${x.key === pm15.key}">15PM ${esc(cap)} (${fmtC(x.v)})</button>`;
-      }).join('')}</div>` : ''}
+      <div class="sub" style="margin-bottom:6px">${esc(srcNote)}</div>
+      ${pm15List.length > 1 ? `<div class="cmp15-opts">${pm15List.map(x =>
+        `<button type="button" class="cmp15-pill" data-pm15="${esc(x.key)}" aria-pressed="${x.key === pm15.key}">15PM ${esc(x.pill)}</button>`
+      ).join('')}</div>` : ''}
       <div class="cmp15-opts">${TAM300_FEES.map(([id, lbl]) =>
         `<button type="button" class="cmp15-pill" data-fee="${id}" aria-pressed="${id === S.cmp15Fee}">${lbl}</button>`).join('')}</div>
       <div class="ev"><span>Giá ${esc(i.label)}</span><b class="n">${fmt(i.v)}</b></div>
@@ -710,6 +782,7 @@ async function load(link, live) {
   $('err').hidden = true;
   if (!ref) { showErr('Link không đúng dạng Google Sheet.'); return; }
   $('refresh').disabled = true; $('refresh').textContent = 'Đang cập nhật…';
+  fetch15PmLive(live);
   try {
     const { text, log, time, auto } = await fetchSheet(ref, live);
     const all = parseCSV(text);
