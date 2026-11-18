@@ -25,7 +25,7 @@ Sau đó, trong sheet có thêm menu **Theo dõi giá**:
 
 ## Hạn mức
 
-Gói miễn phí của `gemini-3.8-flash` có 20 lượt mỗi ngày. Script chỉ dùng 1 lượt, nên còn dư cho việc tra cứu khác. Đổi model ở ô `Cấu hình!B2`.
+Gói miễn phí có 20 lượt mỗi ngày **cho mỗi model**. Script chỉ dùng 1 lượt. Ô `Cấu hình!B2` ghi nhiều model cách nhau bằng dấu cách: model đầu hết lượt (lỗi 429) thì script tự dùng model sau. Script chỉ đọc đúng trang nguồn (url_context), không gọi Google Search, nên không bị giới hạn lượt tìm kiếm.
 
 ## Sửa code rồi đẩy lại (cho người dùng clasp)
 

@@ -34,7 +34,13 @@ ${list}
 Chỉ trả về JSON là mảng những món có giá trên trang KHÁC giá đang ghi: [{"i":chỉ số,"p":giá mới (số nguyên VNĐ),"u":"link trang có giá"}].
 Món giữ nguyên giá hoặc không tìm thấy thì bỏ qua. Không món nào đổi thì trả về []. Không giải thích.`;
 
-  const changes = goiGemini(key, model || 'gemini-3.8-flash', prompt);
+  // Ô B2 có thể ghi nhiều model, cách nhau bằng dấu cách/phẩy: model đầu hết lượt (429) thì thử model sau.
+  const models = String(model || 'gemini-3.8-flash gemini-3.5-flash-lite').split(/[\s,]+/).filter(Boolean);
+  let changes, loi;
+  for (const m of models) {
+    try { changes = goiGemini(key, m, prompt); break; } catch (e) { loi = e; if (!/ 429| 404/.test(e.message)) throw e; }
+  }
+  if (!changes) throw loi;
   const ngay = Utilities.formatDate(new Date(), TZ, 'dd/MM/yyyy'); // chuỗi → sheet vi_VN tự hiểu là ngày
   const doi = locThayDoi(rows, c, changes, Number(nguong) || 30);
   doi.forEach(d => {
@@ -58,7 +64,8 @@ function cot(head) {
 
 function goiGemini(key, model, prompt) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-  const body = { contents: [{ parts: [{ text: prompt }] }], tools: [{ url_context: {} }, { google_search: {} }],
+  // Chỉ đọc đúng trang nguồn (url_context), không tìm Google: rẻ hơn và không dính hạn mức tìm kiếm.
+  const body = { contents: [{ parts: [{ text: prompt }] }], tools: [{ url_context: {} }],
                  generationConfig: { thinkingConfig: { thinkingLevel: 'low' } } };
   const call = b => UrlFetchApp.fetch(url, { method: 'post', contentType: 'application/json', headers: { 'x-goog-api-key': key },
                                              muteHttpExceptions: true, payload: JSON.stringify(b) });
