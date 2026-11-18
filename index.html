@@ -488,13 +488,25 @@ function filtered() {
   const words = norm(S.q).split(/\s+/).filter(Boolean), R = S.role;
   return S.rows.filter(r => (!S.group || r[R.group] === S.group) && words.every(w => norm(r.join(' ')).includes(w)));
 }
+function seriesRank(g) {
+  const s = norm(g);
+  const m = s.match(/\biphone\s*(\d+)/) || s.match(/(\d+)/);
+  if (m) return +m[1] * 10 + (/\bair\b/.test(s) ? 1 : 0);
+  if (/\bair\b/.test(s)) return 175;
+  if (/\bxs\b|\bxr\b|\bx\b/.test(s)) return 100;
+  if (/\bse\b/.test(s)) return 95;
+  return 0;
+}
 function render() {
   const R = S.role, rows = filtered(), rowSet = new Set(rows);
   $('range').innerHTML = RANGES.map(([d, t]) => `<button type="button" data-r="${d}" aria-pressed="${d === S.range}">${t}</button>`).join('');
-  const groups = R.group == null ? [] : [...new Set(S.rows.map(r => r[R.group]).filter(Boolean))];
-  $('chips').innerHTML = [['', 'Tất cả'], ...groups.map(g => [g, g])].map(([g, t]) =>
-    `<button class="chip" type="button" data-g="${esc(g)}" aria-pressed="${!S.watchOnly && g === S.group}">${esc(t)}</button>`).join('') +
-    (R.value != null ? `<button class="chip" type="button" data-w="1" aria-pressed="${S.watchOnly}">★ Đang theo dõi (${S.watch.size})</button>` : '');
+  const groups = R.group == null ? [] : [...new Set(S.rows.map(r => r[R.group]).filter(Boolean))]
+    .sort((a, b) => seriesRank(b) - seriesRank(a));
+  const watchChip = R.value != null
+    ? `<button class="chip" type="button" data-w="1" aria-pressed="${S.watchOnly}">★ Đang theo dõi (${S.watch.size})</button>` : '';
+  const allChip = `<button class="chip" type="button" data-g="" aria-pressed="${!S.watchOnly && S.group === ''}">Tất cả</button>`;
+  $('chips').innerHTML = watchChip + allChip + groups.map(g =>
+    `<button class="chip" type="button" data-g="${esc(g)}" aria-pressed="${!S.watchOnly && g === S.group}">${esc(g)}</button>`).join('');
   const t0 = periodStart();
   const items = withPeriod(S.items.filter(i => rowSet.has(i.r) && (!S.watchOnly || S.watch.has(i.key))), t0);
   $('track-area').hidden = $('range').hidden = !S.items.length;
@@ -723,7 +735,7 @@ document.addEventListener('click', e => {
   }
   const ch = t.closest('.chip');
   if (ch) {
-    if (ch.dataset.w) S.watchOnly = !S.watchOnly; else { S.watchOnly = false; S.group = ch.dataset.g; }
+    if (ch.dataset.w) { S.watchOnly = !S.watchOnly; if (S.watchOnly) S.group = ''; } else { S.watchOnly = false; S.group = ch.dataset.g; }
     render();
     const sel = $('chips')?.querySelector('.chip[aria-pressed=true]');
     sel?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
