@@ -13,26 +13,28 @@
 --wall:#e8edf6;--b1:#7ec3ff;--b2:#c6a8ff;--b3:#ffb3c6;--b4:#9eeed3;
 --text:#0b0b0f;--muted:rgba(60,60,67,.74);--faint:rgba(60,60,67,.52);--line:rgba(60,60,67,.14);--track:rgba(120,120,128,.13);
 --accent:#007aff;--down:#0a6fe0;--up:#e5352b;--down-bg:rgba(0,122,255,.13);--up-bg:rgba(255,59,48,.13);--warn-bg:rgba(255,149,0,.18);--warn:#a85400;--star:#ff9f0a;
---g:255 255 255;--ga:calc(.4 + var(--tint)*.5);--brd:rgba(255,255,255,.7);--edge:rgba(0,0,0,.09);--spec:rgba(255,255,255,.95);--glow:rgba(255,255,255,.55);
---sh:0 8px 28px rgba(40,50,90,.12);--sh-s:0 2px 8px rgba(40,50,90,.1);--lens:rgba(255,255,255,.95);--solid:#fff}
+--g:255 255 255;--ga:calc(.4 + var(--tint)*.5);--bar-a:calc(.16 + var(--tint)*.22);--brd:rgba(255,255,255,.7);--bar-brd:rgba(255,255,255,.62);--edge:rgba(0,0,0,.09);--spec:rgba(255,255,255,.95);--spec-b:rgba(255,255,255,.58);--rim:rgba(255,255,255,.42);--sheen-t:rgba(255,255,255,.38);--sheen-b:rgba(255,255,255,.2);--glow:rgba(255,255,255,.55);
+--sh:0 8px 28px rgba(40,50,90,.12);--sh-s:0 2px 8px rgba(40,50,90,.1);--bar-sh:inset 0 1.5px 1px var(--spec),inset 0 -1.5px 1.5px var(--spec-b),inset 0 0 12px var(--rim),0 0 0 .5px var(--edge),0 12px 32px rgba(20,30,60,.18);--lens:linear-gradient(180deg,rgba(255,255,255,.88),rgba(255,255,255,.58));--solid:#fff}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--wall:#05060b;--b1:#1c48c9;--b2:#5f27c4;--b3:#a3185a;--b4:#0b6e5a;
 --text:#f5f5f7;--muted:rgba(235,235,245,.72);--faint:rgba(235,235,245,.46);--line:rgba(235,235,245,.12);--track:rgba(120,120,128,.24);
 --accent:#0a84ff;--down:#4aa3ff;--up:#ff6b61;--down-bg:rgba(10,132,255,.22);--up-bg:rgba(255,69,58,.22);--warn-bg:rgba(255,159,10,.2);--warn:#ffb340;
---g:30 30 36;--ga:calc(.36 + var(--tint)*.52);--brd:rgba(255,255,255,.14);--edge:rgba(0,0,0,.6);--spec:rgba(255,255,255,.24);--glow:rgba(255,255,255,.1);
---sh:0 10px 30px rgba(0,0,0,.45);--sh-s:0 2px 8px rgba(0,0,0,.35);--lens:rgba(120,120,128,.55);--solid:#1c1c1e}}
+--g:30 30 36;--ga:calc(.36 + var(--tint)*.52);--bar-a:calc(.22 + var(--tint)*.26);--brd:rgba(255,255,255,.14);--bar-brd:rgba(255,255,255,.26);--edge:rgba(0,0,0,.6);--spec:rgba(255,255,255,.42);--spec-b:rgba(255,255,255,.18);--rim:rgba(255,255,255,.14);--sheen-t:rgba(255,255,255,.18);--sheen-b:rgba(255,255,255,.07);--glow:rgba(255,255,255,.1);
+--sh:0 10px 30px rgba(0,0,0,.45);--sh-s:0 2px 8px rgba(0,0,0,.35);--bar-sh:inset 0 1.5px 1px var(--spec),inset 0 -1.5px 1.5px var(--spec-b),inset 0 0 14px var(--rim),0 0 0 .5px var(--edge),0 14px 36px rgba(0,0,0,.48);--lens:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.14));--solid:#1c1c1e}}
 :root[data-theme=dark]{color-scheme:dark;--wall:#05060b;--b1:#1c48c9;--b2:#5f27c4;--b3:#a3185a;--b4:#0b6e5a;
 --text:#f5f5f7;--muted:rgba(235,235,245,.72);--faint:rgba(235,235,245,.46);--line:rgba(235,235,245,.12);--track:rgba(120,120,128,.24);
 --accent:#0a84ff;--down:#4aa3ff;--up:#ff6b61;--down-bg:rgba(10,132,255,.22);--up-bg:rgba(255,69,58,.22);--warn-bg:rgba(255,159,10,.2);--warn:#ffb340;
---g:30 30 36;--ga:calc(.36 + var(--tint)*.52);--brd:rgba(255,255,255,.14);--edge:rgba(0,0,0,.6);--spec:rgba(255,255,255,.24);--glow:rgba(255,255,255,.1);
---sh:0 10px 30px rgba(0,0,0,.45);--sh-s:0 2px 8px rgba(0,0,0,.35);--lens:rgba(120,120,128,.55);--solid:#1c1c1e}
+--g:30 30 36;--ga:calc(.36 + var(--tint)*.52);--bar-a:calc(.22 + var(--tint)*.26);--brd:rgba(255,255,255,.14);--bar-brd:rgba(255,255,255,.26);--edge:rgba(0,0,0,.6);--spec:rgba(255,255,255,.42);--spec-b:rgba(255,255,255,.18);--rim:rgba(255,255,255,.14);--sheen-t:rgba(255,255,255,.18);--sheen-b:rgba(255,255,255,.07);--glow:rgba(255,255,255,.1);
+--sh:0 10px 30px rgba(0,0,0,.45);--sh-s:0 2px 8px rgba(0,0,0,.35);--bar-sh:inset 0 1.5px 1px var(--spec),inset 0 -1.5px 1.5px var(--spec-b),inset 0 0 14px var(--rim),0 0 0 .5px var(--edge),0 14px 36px rgba(0,0,0,.48);--lens:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.14));--solid:#1c1c1e}
 
-.top::before,.kpi,.card,.tablewrap,details.src,.seg,#tip,dialog{background:rgb(var(--g)/var(--ga));
+.kpi,.card,.tablewrap,details.src,#tip,dialog{background:rgb(var(--g)/var(--ga));
 -webkit-backdrop-filter:blur(20px) saturate(1.75);backdrop-filter:blur(20px) saturate(1.75);border:1px solid var(--brd);
 box-shadow:inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge),var(--sh)}
+.top::before,.seg{background:rgb(var(--g)/var(--bar-a));
+-webkit-backdrop-filter:blur(11px) saturate(2.1) contrast(1.06) brightness(1.03);backdrop-filter:blur(11px) saturate(2.1) contrast(1.06) brightness(1.03);border:1px solid var(--bar-brd);
+box-shadow:var(--bar-sh)}
 .btn,.chip,input:not([type=range]),select{background:rgb(var(--g)/var(--ga));
 -webkit-backdrop-filter:blur(12px) saturate(1.5);backdrop-filter:blur(12px) saturate(1.5);border:1px solid var(--brd);
 box-shadow:inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge),var(--sh-s)}
-.seg{box-shadow:inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge),var(--sh-s)}
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -57,19 +59,21 @@ button,summary,.mv,#track tbody tr,.chip,.cmp15-pill{touch-action:manipulation}
 .btn:disabled{opacity:.6;cursor:wait}
 
 .top{position:sticky;top:max(10px,env(safe-area-inset-top));z-index:10;isolation:isolate;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 14px;margin:12px 0 14px;padding:14px 18px;border-radius:28px}
-.top::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;transition:background-color .24s ease}
-.scrolled .top{--ga:calc(.62 + var(--tint)*.33)}
+.top::before,.top::after,.seg::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none}
+.top::before{z-index:-1;transition:background-color .24s ease}
+.top::after,.seg::after{z-index:2;background:linear-gradient(180deg,var(--sheen-t) 0%,transparent 28%,transparent 74%,var(--sheen-b) 100%);box-shadow:inset 0 0 10px var(--rim)}
+.scrolled .top{--bar-a:calc(.22 + var(--tint)*.26)}
 .scrolled h1{transform:scale(.72)}
 .acts{display:flex;gap:8px;align-items:center}
 .upd{margin-top:2px;transition:opacity .22s ease}
-.scrolled .upd{opacity:.65}
+.scrolled .upd{opacity:.78}
 .upd b{color:var(--text);font-weight:600}
 
 .seg{position:relative;display:inline-flex;padding:3px;border-radius:999px;touch-action:none}
 .seg button{position:relative;z-index:1;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;transition:color .18s,transform .32s var(--ios)}
 .seg button:active{transform:scale(.93);transition-duration:.1s}
 .seg button[aria-pressed=true]{color:var(--text)}
-.lens{position:absolute;z-index:0;top:3px;bottom:3px;left:0;width:100px;transform-origin:left center;border-radius:999px;background:var(--lens);box-shadow:0 2px 10px rgba(0,0,0,.14),inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge);transition:transform .38s var(--ios);will-change:transform}
+.lens{position:absolute;z-index:0;top:3px;bottom:3px;left:0;width:100px;transform-origin:left center;border-radius:999px;background:var(--lens);box-shadow:0 3px 12px rgba(0,0,0,.14),inset 0 1.5px 1px var(--spec),inset 0 -1px 1px var(--spec-b),0 0 0 .5px var(--edge);transition:transform .38s var(--ios);will-change:transform}
 .lens.jelly{animation:jelly .42s var(--spring)}
 @keyframes jelly{25%{scale:1.06 .92}}
 
@@ -182,7 +186,12 @@ dialog::backdrop{background:rgba(0,0,0,.22);-webkit-backdrop-filter:blur(4px);ba
 .cmp15-btn{font-size:13px;padding:6px 12px}
 .cmp15-card .ev{grid-template-columns:1fr auto}
 .cmp15-opts{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.cmp15-pill{border-radius:999px;padding:4px 10px;font-size:12px;font-weight:500;background:var(--card,rgba(255,255,255,.5));border:1px solid var(--line);transition:transform .32s var(--ios),background-color .18s}
+.cmp-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;margin:6px 0 8px;font-size:13px}
+.cmp-bar-acts{display:flex;flex-wrap:wrap;gap:6px}
+.cmp-pick{padding:8px 10px;margin:6px 0 10px;border-radius:14px;background:rgba(128,128,128,.08);border:.5px solid var(--line);animation:iosDrop .24s var(--ios)}
+.cmp-pick .cmp15-opts{margin:6px 0 2px;max-height:170px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.cmp-lbl{font-size:12px;color:var(--muted);margin:8px 0 2px}
+.cmp15-pill{border-radius:999px;padding:4px 10px;font-size:12px;font-weight:500;background:rgb(var(--g)/.58);border:1px solid var(--line);transition:transform .32s var(--ios),background-color .18s}
 .cmp15-pill:active{transform:scale(.93);transition-duration:.08s}
 .cmp15-pill[aria-pressed=true]{background:var(--accent);color:#fff;border-color:transparent;font-weight:600}
 .cmp15-total{font-size:18px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
@@ -202,7 +211,7 @@ h1{font-size:26px} .scrolled h1{transform:scale(.74)}
 #refresh{width:38px;height:38px;padding:0;font-size:0;display:inline-grid;place-items:center}
 #refresh::before{content:"⟳";font-size:19px}
 .mv{grid-template-columns:1fr auto;row-gap:4px}.mv .ml{grid-column:1/-1;white-space:normal}
-#range{position:fixed;z-index:20;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translate3d(-50%,0,0);padding:4px;box-shadow:inset 0 1px 0 var(--spec),0 0 0 .5px var(--edge),0 12px 32px rgba(0,0,0,.22)}
+#range{position:fixed;z-index:20;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translate3d(-50%,0,0);padding:4px;box-shadow:var(--bar-sh)}
 #range button{padding:10px 15px;font-size:14px}
 #range .lens{top:4px;bottom:4px}
 .kpis{grid-template-columns:1fr 1fr;gap:8px}
@@ -223,8 +232,8 @@ dialog.closing{transform:translate3d(0,100%,0);opacity:1;transition:transform .2
 @keyframes sheet{from{transform:translate3d(0,100%,0)}}
 ::view-transition,::view-transition-group(*){pointer-events:none}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
-@media (prefers-reduced-transparency:reduce){:root{--tint:1!important}}
-@media (prefers-contrast:more){:root{--tint:1!important;--muted:var(--text);--line:var(--faint)}}
+@media (prefers-reduced-transparency:reduce){:root{--tint:1!important;--bar-a:.94!important}}
+@media (prefers-contrast:more){:root{--tint:1!important;--bar-a:.96!important;--muted:var(--text);--line:var(--faint)}}
 </style>
 </head>
 <body>
@@ -282,13 +291,14 @@ dialog.closing{transform:translate3d(0,100%,0);opacity:1;transition:transform .2
 <dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
 <script>
 const DEFAULT_LINK = 'https://docs.google.com/spreadsheets/d/1pXlE41ArlhpHfkVwq83HpsHe2Y5-L6EhdHxBrqOkNdY/edit?gid=0';
+const DEFAULT_ID = '1pXlE41ArlhpHfkVwq83HpsHe2Y5-L6EhdHxBrqOkNdY';
 const RANGES = [[7, '7 ngày'], [30, '30 ngày'], [90, '90 ngày'], [0, 'Tất cả']];
 const DAY = 864e5, TOP = 15, NEW_DAYS = 3, LOG_TAB = 'Biến động';
 const today = new Date(); today.setHours(0, 0, 0, 0);
 const S = { link: '', id: '', gid: '0', headers: [], rows: [], cols: [], role: {}, log: null,
   q: '', group: '', watchOnly: false, sortK: 'chg', sortDir: 1, rawJ: null, rawDir: 1, range: 30, watch: new Set(), items: [], open: null,
-  cmp15Open: false, cmp15Key: '', cmp15Fee: 'ext',
-  pm15Live: { items: [], at: 0, loading: false, err: false } };
+  cmp15Open: false, cmpPickOpen: false, cmpModel: '', cmp15Key: '', cmpDstKey: '', cmp15Fee: 'ext',
+  tamLive: { map: new Map(), at: 0, loading: false, err: false, synced: 0 } };
 
 /* ---------- tiện ích ---------- */
 const $ = id => document.getElementById(id);
@@ -387,30 +397,84 @@ function parseLog(text, mainText) {
   return { pairs, map };
 }
 
+/* ---------- đồng bộ giá trực tiếp từ tam300.com cho toàn bộ dòng máy ---------- */
+const TAM_ORIGIN = 'https://tam300.com';
+const TAM_SLUGS = ['iphone-17-series', 'iphone-16-series', 'iphone-15-series', 'iphone-14-series', 'iphone-13-series', 'iphone-12-series', 'iphone-11-series', 'iphone-x-series']
+  .map(s => `${TAM_ORIGIN}/iphone/${s}`);
+const capMb = s => { const m = String(s || '').match(/(\d+)\s*(GB|TB)/i); return m ? +m[1] * (/tb/i.test(m[2]) ? 1024 : 1) : 0; };
+const capStr = s => (String(s || '').match(/\b(\d+\s*(?:GB|TB))\b/i) || ['', ''])[1].replace(/\s+/g, '').toUpperCase();
+function seriesRank(g) {
+  const s = norm(g);
+  const m = s.match(/\biphone\s*(\d+)/) || s.match(/(\d+)/);
+  if (m) return +m[1] * 10 + (/\bair\b/.test(s) ? 1 : 0);
+  if (/\bair\b/.test(s)) return 175;
+  if (/\bxs max\b/.test(s)) return 105;
+  if (/\bxs\b|\bxr\b|\bx\b/.test(s)) return 100;
+  if (/\bse\b/.test(s)) return 95;
+  return 0;
+}
+function tamModelMeta(s) {
+  const t = norm(s).replace(/\s+/g, ' ');
+  const m = t.match(/(?:iphone\s*)?(\d{1,2}|xs max|xs|xr|x|se(?:\s*\d+)?)(?:\s*(pro max|pro|plus|mini|air)\b)?/);
+  if (!m) return null;
+  const gen = m[1], varName = m[2] || '';
+  const cond = /new|seal|\bmoi\b|chua kich hoat/.test(t) && !/like|\bcu\b|99|2nd|da kich hoat|qua su dung|doi tra/.test(t) ? 'moi' : 'cu';
+  const prettyGen = /^(xs max|xs|xr|x|se)/.test(gen) ? gen.toUpperCase().replace('XS MAX', 'XS Max') : gen;
+  const prettyVar = varName ? ' ' + varName.replace(/\b\w/g, c => c.toUpperCase()) : '';
+  const label = `iPhone ${prettyGen}${prettyVar}${cond === 'moi' ? ' (Newseal)' : ''}`;
+  const rank = seriesRank(gen) * 10 + ({ 'pro max': 6, pro: 5, plus: 4, air: 3, '': 2, mini: 1 }[varName] || 0) + (cond === 'moi' ? .5 : 0);
+  return { id: `${gen}${varName ? ' ' + varName : ''}|${cond}`, base: `${gen}${varName ? ' ' + varName : ''}`, label, cond, rank };
+}
+const tamItemKey = s => {
+  const meta = tamModelMeta(s), c = capStr(s);
+  return meta && c ? `${meta.base}|${c.toLowerCase()}|${meta.cond}` : null;
+};
+function parseTamPrice(s) {
+  const t = String(s ?? '').trim();
+  const tr = t.match(/(\d+(?:[.,]\d+)?)\s*tri[eệ]u/i);
+  if (tr) return Math.round(parseFloat(tr[1].replace(',', '.')) * 1e6);
+  const n = num(t);
+  return n && n >= 1e6 ? Math.round(n) : null;
+}
+
 /* ---------- dựng chuỗi giá theo thời gian cho từng sản phẩm ---------- */
-// Nguồn: tab "Biến động" nếu có; không thì cột giá cũ + ngày cập nhật, và giá hiện tại.
+// Nguồn: tab "Biến động" nếu có; không thì cột giá cũ + ngày cập nhật, và giá hiện tại (đồng bộ live tam300.com nếu là sheet mặc định).
 // Điểm t=null là "giá trước lần đổi đầu tiên đã ghi", không rõ từ ngày nào -> vẽ nét đứt.
 const at = (pts, D) => { let p = pts[0].p; for (const x of pts) { if (!x.t || x.t <= D) p = x.p; else break; } return p; };
 function buildItems() {
-  const R = S.role, LG = S.log; if (R.value == null) return [];
-  return S.rows.map(r => {
-    const v = num(r[R.value]); if (v == null) return null;
+  const R = S.role, LG = S.log, useLive = S.id === DEFAULT_ID && S.tamLive.map.size > 0;
+  if (R.value == null) return [];
+  let synced = 0;
+  const list = S.rows.map(r => {
+    const sheetV = num(r[R.value]); if (sheetV == null) return null;
+    const lbl = rowLabel(r), tk = useLive ? tamItemKey(lbl) : null, live = tk ? S.tamLive.map.get(tk) : null;
+    const v = live ? live.baseV : sheetV;
+    if (live && live.baseV !== sheetV) synced++;
     const o = R.cmp != null ? num(r[R.cmp]) : null, d = R.date != null ? date(r[R.date]) : null, key = textKey(r);
     const ev = LG?.map.get(LG.pairs.map(([m]) => norm((r[m] || '').trim())).join('|')) || [];
     const raw = [];
     if (ev.length) {
       const last = ev[ev.length - 1];
       raw.push({ t: null, p: ev[0].cu ?? ev[0].p }, ...ev.map(e => ({ t: e.t, p: e.p })));
-      if (last.p !== v) raw.push({ t: d && d > last.t ? d : today, p: v }); // sửa tay trong sheet mà chưa ghi biến động
-    } else if (o != null && o !== v) raw.push({ t: null, p: o }, { t: d || today, p: v }); else raw.push({ t: d, p: v });
+      if (last.p !== sheetV) raw.push({ t: d && d > last.t ? d : today, p: sheetV });
+      if (v !== sheetV) raw.push({ t: today, p: v });
+    } else if (o != null && o !== sheetV) {
+      raw.push({ t: null, p: o }, { t: d || today, p: sheetV });
+      if (v !== sheetV) raw.push({ t: today, p: v });
+    } else if (v !== sheetV) {
+      raw.push({ t: d, p: sheetV }, { t: today, p: v });
+    } else raw.push({ t: d, p: v });
     raw.push({ t: today, p: v });
     raw.sort((a, b) => (a.t ? +a.t : -Infinity) - (b.t ? +b.t : -Infinity));
     const pts = raw.filter((x, i) => i === 0 || x.p !== raw[i - 1].p);
     const ps = pts.map(x => x.p);
     const lastT = pts.length > 1 ? pts[pts.length - 1].t : d;
-    return { r, key, label: rowLabel(r), group: R.group != null ? r[R.group] : '', v, pts, lo: Math.min(...ps), hi: Math.max(...ps),
+    return { r, key, label: lbl, group: R.group != null ? r[R.group] : '', v, sheetV, tiers: live?.tiers || null,
+      liveUrl: live?.url || '', pts, lo: Math.min(...ps), hi: Math.max(...ps),
       mean: avg(ps), changes: pts.length - 1, lastT, est: pts[0].t === null, ev };
   }).filter(Boolean);
+  S.tamLive.synced = synced;
+  return list;
 }
 function periodStart() {
   if (S.range) return new Date(+today - S.range * DAY);
@@ -510,15 +574,6 @@ const hostOf = s => { try { return new URL(s).hostname.replace(/^www\./, ''); } 
 function filtered() {
   const words = norm(S.q).split(/\s+/).filter(Boolean), R = S.role;
   return S.rows.filter(r => (!S.group || r[R.group] === S.group) && words.every(w => norm(r.join(' ')).includes(w)));
-}
-function seriesRank(g) {
-  const s = norm(g);
-  const m = s.match(/\biphone\s*(\d+)/) || s.match(/(\d+)/);
-  if (m) return +m[1] * 10 + (/\bair\b/.test(s) ? 1 : 0);
-  if (/\bair\b/.test(s)) return 175;
-  if (/\bxs\b|\bxr\b|\bx\b/.test(s)) return 100;
-  if (/\bse\b/.test(s)) return 95;
-  return 0;
 }
 function syncRangeDom() {
   const rEl = $('range');
@@ -624,128 +679,200 @@ const TAM300_FEES = [
   ['bh', 'TAM300 còn BH (+300k)', 300000, 300000],
   ['6m', 'Dùng 6 tháng (+150k–250k)', 150000, 250000],
 ];
-const capMb = s => { const m = String(s || '').match(/(\d+)\s*(GB|TB)/i); return m ? +m[1] * (/tb/i.test(m[2]) ? 1024 : 1) : 0; };
-const capStr = s => (String(s || '').match(/\b(\d+\s*(?:GB|TB))\b/i) || ['', ''])[1].replace(/\s+/g, '').toUpperCase();
-function parseTamPrice(s) {
-  const t = String(s ?? '').trim();
-  const tr = t.match(/(\d+(?:[.,]\d+)?)\s*tri[eệ]u/i);
-  if (tr) return Math.round(parseFloat(tr[1].replace(',', '.')) * 1e6);
-  const n = num(t);
-  return n && n >= 1e6 ? Math.round(n) : null;
-}
-let pm15Inflight = null;
-async function fetch15PmLive(force) {
-  const L = S.pm15Live;
-  if (!force && L.at && Date.now() - L.at < 3e5 && L.items.length) return L.items;
-  if (pm15Inflight) return pm15Inflight;
+let tamInflight = null;
+async function fetchTamLive(force) {
+  const L = S.tamLive;
+  if (!force && L.at && Date.now() - L.at < 3e5 && L.map.size) return L.map;
+  if (tamInflight) return tamInflight;
   L.loading = true; L.err = false;
-  pm15Inflight = (async () => {
+  tamInflight = (async () => {
     try {
-      const res = await fetch(`https://tam300.com/iphone/iphone-15-series?_=${Date.now()}`, { cache: 'no-store' });
-      if (!res.ok) throw 0;
-      const html = await res.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const cards = [...doc.querySelectorAll('article[data-product-card]')];
-      const card = cards.find(a => {
-        const title = a.querySelector('h1,h2,h3,a,.font-semibold,.title')?.textContent || a.textContent.slice(0, 120);
-        return /15\s*Pro\s*Max/i.test(title);
-      });
-      if (!card) throw 0;
-      const offers = JSON.parse(card.getAttribute('data-offers') || '[]');
-      const grouped = new Map();
-      for (const o of offers) {
-        const v = parseTamPrice(o.price), cap = capStr(o.capacity || '256GB') || '256GB';
-        if (!v) continue;
-        const k = `${cap}|${v}`;
-        if (!grouped.has(k)) grouped.set(k, { key: `live|${k}`, cap, capN: capMb(cap), colors: [], v, live: true });
-        if (o.color && !grouped.get(k).colors.includes(o.color)) grouped.get(k).colors.push(o.color);
+      let urls = [...TAM_SLUGS];
+      try {
+        const home = await fetch(`${TAM_ORIGIN}/?_=${Date.now()}`, { cache: 'no-store' });
+        if (home.ok) {
+          const found = [...new DOMParser().parseFromString(await home.text(), 'text/html').querySelectorAll('a[href^="/iphone/"]')]
+            .map(a => TAM_ORIGIN + (a.getAttribute('href') || '').split(/[?#]/)[0])
+            .filter(u => u !== `${TAM_ORIGIN}/iphone/`);
+          if (found.length >= 4) urls = [...new Set(found)];
+        }
+      } catch { }
+      const map = new Map();
+      const pages = await Promise.allSettled(urls.map(async u => {
+        const r = await fetch(`${u}?_=${Date.now()}`, { cache: 'no-store' });
+        return r.ok ? [u, await r.text()] : null;
+      }));
+      for (const res of pages) {
+        if (res.status !== 'fulfilled' || !res.value) continue;
+        const [url, html] = res.value;
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        for (const card of doc.querySelectorAll('article[data-product-card]')) {
+          const rawTitle = card.querySelector('h1,h2,h3')?.textContent
+            || card.textContent.split('\n').map(s => s.trim()).filter(Boolean)[0] || '';
+          const meta = tamModelMeta(rawTitle);
+          if (!meta) continue;
+          let offers = [];
+          try { offers = JSON.parse(card.getAttribute('data-offers') || '[]'); } catch { continue; }
+          const byCap = new Map();
+          for (const o of offers) {
+            const v = parseTamPrice(o.price), cap = capStr(o.capacity || '256GB') || '256GB';
+            if (!v) continue;
+            if (!byCap.has(cap)) byCap.set(cap, new Map());
+            const tiers = byCap.get(cap), tk = String(v);
+            if (!tiers.has(tk)) tiers.set(tk, { key: `live|${meta.id}|${cap}|${v}`, cap, capN: capMb(cap), colors: [], v, live: true });
+            if (o.color && !tiers.get(tk).colors.includes(o.color)) tiers.get(tk).colors.push(o.color);
+          }
+          for (const [cap, tierMap] of byCap) {
+            const tiers = [...tierMap.values()].sort((a, b) => a.v - b.v).map(t => ({
+              ...t,
+              colorLabel: t.colors.join('/'),
+            }));
+            if (tiers.length) map.set(`${meta.base}|${cap.toLowerCase()}|${meta.cond}`, { baseV: tiers[0].v, tiers, url, title: rawTitle });
+          }
+        }
       }
-      const list = [...grouped.values()].sort((a, b) => a.capN - b.capN || a.v - b.v).map(x => {
-        const col = x.colors.join('/');
-        return {
-          ...x,
-          label: `iPhone 15 Pro Max · ${x.cap}${col ? ' · ' + col : ''}`,
-          pill: `${x.cap}${col ? ' ' + col : ''} (${fmtC(x.v)})`,
-        };
-      });
-      if (!list.length) throw 0;
-      L.items = list; L.at = Date.now(); L.err = false;
+      if (!map.size) throw 0;
+      L.map = map; L.at = Date.now(); L.err = false;
+      if (S.id === DEFAULT_ID && S.rows.length) {
+        S.items = buildItems();
+        if (S.lastLoad) updateStatus(S.lastLoad.time, S.lastLoad.auto);
+        render();
+      }
     } catch {
       L.err = true;
-    } finally {
-      L.loading = false; pm15Inflight = null;
       if (S.open && $('dlg').open && S.cmp15Open) openDetail(S.open, true);
+    } finally {
+      L.loading = false; tamInflight = null;
     }
-    return L.items;
+    return L.map;
   })();
-  return pm15Inflight;
+  return tamInflight;
 }
-function find15ProMaxList(targetItem) {
-  const sheetList = S.items.filter(x => /15\s*pro\s*max/i.test(x.label)).map(x => {
-    const cap = capStr(x.label);
-    return { key: x.key, cap, capN: capMb(cap), v: x.v, label: x.label, pill: `${cap || x.label} (${fmtC(x.v)})`, live: false };
-  }).sort((a, b) => a.capN - b.capN || a.v - b.v);
-  const usingLive = S.pm15Live.items.length > 0;
-  const list = (usingLive ? S.pm15Live.items : sheetList).map(x => {
-    const sameCapSheet = sheetList.find(s => s.cap && s.cap === x.cap);
-    return sameCapSheet ? { ...x, sheetV: sameCapSheet.v } : x;
-  });
-  if (!list.length) return { list: [], pick: null, usingLive: false };
-  let pick = list.find(x => x.key === S.cmp15Key);
-  if (!pick && targetItem) {
-    const cap = capStr(targetItem.label);
-    if (cap) pick = list.find(x => x.cap === cap);
+function modelMetaOf(item) {
+  const m = tamModelMeta(item.label);
+  if (m) return { id: m.id, label: m.label, rank: m.rank, is15Pm: m.id === '15 pro max|cu' };
+  const base = item.label.split(' · ')[0] || item.label;
+  return { id: norm(base), label: base, rank: seriesRank(item.group || base), is15Pm: /15\s*pro\s*max/i.test(base) };
+}
+function buildCmpState(targetItem) {
+  const dstMeta = modelMetaOf(targetItem);
+  const modelsMap = new Map();
+  for (const x of S.items) {
+    const mm = modelMetaOf(x);
+    if (!modelsMap.has(mm.id)) modelsMap.set(mm.id, mm);
   }
-  if (!pick) pick = list.find(x => x.key !== targetItem?.key) || list[0];
-  return { list, pick, usingLive };
+  const models = [...modelsMap.values()].sort((a, b) => b.rank - a.rank || a.label.localeCompare(b.label, 'vi'));
+  const pm15Model = models.find(m => m.is15Pm);
+  const fallbackModel = models.find(m => m.id !== dstMeta.id) || models[0];
+  const defaultModelId = (!dstMeta.is15Pm && pm15Model) ? pm15Model.id : fallbackModel?.id || '';
+  const srcModel = models.find(m => m.id === S.cmpModel) || models.find(m => m.id === defaultModelId) || models[0];
+  const srcVariants = [];
+  if (srcModel) {
+    for (const x of S.items) {
+      if (modelMetaOf(x).id !== srcModel.id) continue;
+      const cap = capStr(x.label);
+      if (x.tiers?.length) {
+        for (const t of x.tiers) {
+          srcVariants.push({
+            key: t.key, itemKey: x.key, cap: t.cap, capN: t.capN, v: t.v, sheetV: x.sheetV, live: true,
+            label: `${srcModel.label} · ${t.cap}${t.colorLabel ? ' · ' + t.colorLabel : ''}`,
+            pill: `${t.cap}${t.colorLabel ? ' ' + t.colorLabel : ''} (${fmtC(t.v)})`,
+          });
+        }
+      } else {
+        srcVariants.push({
+          key: x.key, itemKey: x.key, cap, capN: capMb(cap), v: x.v, sheetV: x.sheetV, live: false,
+          label: x.label, pill: `${cap || x.label} (${fmtC(x.v)})`,
+        });
+      }
+    }
+    srcVariants.sort((a, b) => a.capN - b.capN || a.v - b.v);
+  }
+  const tCap = capStr(targetItem.label);
+  let pickSrc = srcVariants.find(x => x.key === S.cmp15Key);
+  if (!pickSrc && tCap) pickSrc = srcVariants.find(x => x.cap === tCap && x.itemKey !== targetItem.key) || srcVariants.find(x => x.cap === tCap);
+  if (!pickSrc) pickSrc = srcVariants.find(x => x.itemKey !== targetItem.key) || srcVariants[0] || null;
+  const dstVariants = (targetItem.tiers?.length > 1) ? targetItem.tiers.map(t => ({
+    key: t.key, v: t.v,
+    label: `${targetItem.label}${t.colorLabel ? ' · ' + t.colorLabel : ''}`,
+    pill: `${t.colorLabel || t.cap} (${fmtC(t.v)})`,
+  })) : [];
+  const pickDst = dstVariants.find(d => d.key === S.cmpDstKey) || dstVariants[0] || null;
+  return { dstMeta, models, srcModel, defaultModelId, srcVariants, pickSrc, dstVariants, pickDst };
 }
 
 /* ---------- chi tiết một sản phẩm (kiểu camelcamelcamel) ---------- */
-function openDetail(key, refresh) {
+function openDetail(key, refresh, keepCmp) {
   const i = S.items.find(x => x.key === key); if (!i) { $('dlg').close(); return; }
-  if (S.open !== key) S.cmp15Key = '';
+  if (S.open !== key && !keepCmp) { S.cmp15Key = ''; S.cmpDstKey = ''; S.cmpModel = ''; S.cmpPickOpen = false; }
   S.open = key;
-  if (!S.pm15Live.at && !pm15Inflight) fetch15PmLive();
+  if (S.id === DEFAULT_ID && !S.tamLive.at && !tamInflight) fetchTamLive();
   const t0 = periodStart(); withPeriod([i], t0);
   const sameGrp = S.items.filter(x => x.group === i.group);
   const verdict = i.hi === i.lo ? ['', 'Chưa ghi nhận thay đổi giá'] : i.v <= i.lo ? ['down', 'Giá thấp nhất từng ghi nhận']
     : i.v >= i.hi ? ['up', 'Giá cao nhất từng ghi nhận'] : i.v < i.mean ? ['down', `Thấp hơn mức trung bình ${pct((i.v - i.mean) / i.mean)}`] : ['up', `Cao hơn mức trung bình ${pct((i.v - i.mean) / i.mean)}`];
   const ev = i.pts.map((x, k) => ({ ...x, prev: k ? i.pts[k - 1].p : null })).reverse();
-  const { list: pm15List, pick: pm15, usingLive } = find15ProMaxList(i);
-  let cmp15Html = '';
-  if (pm15 && S.cmp15Open) {
+  const cmp = buildCmpState(i), src = cmp.pickSrc;
+  const dstV = cmp.pickDst ? cmp.pickDst.v : i.v;
+  const dstLabel = cmp.pickDst ? cmp.pickDst.label : i.label;
+  let cmpHtml = '';
+  if (src && S.cmp15Open) {
     const [, , feeMin, feeMax] = TAM300_FEES.find(f => f[0] === S.cmp15Fee) || TAM300_FEES[0];
-    const diff = i.v - pm15.v, payMin = diff + feeMin, payMax = diff + feeMax;
+    const diff = dstV - src.v, payMin = diff + feeMin, payMax = diff + feeMax;
     const payText = payMax <= 0
-      ? `Không cần bù (15PM cao hơn ${fmt(Math.abs(payMax))}${payMin < payMax ? ' – ' + fmt(Math.abs(payMin)) : ''})`
+      ? `Không cần bù (máy cũ cao hơn ${fmt(Math.abs(payMax))}${payMin < payMax ? ' – ' + fmt(Math.abs(payMin)) : ''})`
       : payMin <= 0 ? `0 – ${fmt(payMax)}` : `${fmt(payMin)}${payMax > payMin ? ' – ' + fmt(payMax) : ''}`;
-    const minLiveSameCap = pm15List.find(x => x.cap === pm15.cap)?.v;
-    const sheetDiffNote = usingLive && pm15.sheetV && minLiveSameCap && pm15.sheetV !== minLiveSameCap
-      ? ` · Sheet đang ghi ${fmt(pm15.sheetV)} (đã lấy giá thực tế mới nhất)` : '';
-    const srcNote = usingLive
-      ? `Giá thực tế từ tam300.com (${S.pm15Live.at ? new Date(S.pm15Live.at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : 'vừa xong'})${sheetDiffNote}`
-      : (S.pm15Live.loading ? 'Đang lấy giá thực tế 15PM từ tam300.com… (tạm dùng giá Sheet)' : 'Tạm dùng giá trong Sheet (không tải được tam300.com trực tiếp)');
-    cmp15Html = `<section class="card cmp15-card" style="margin-top:12px">
-      <h3>So sánh &amp; tính giá bù từ 15 Pro Max <small><a href="https://tam300.com/thu-mua" target="_blank" rel="noopener">Chính sách TAM300 ↗</a></small></h3>
+    const minSameCap = cmp.srcVariants.find(x => x.cap === src.cap)?.v;
+    const sheetDiffNote = src.live && src.sheetV && minSameCap && src.sheetV !== minSameCap
+      ? ` · Sheet đang ghi ${fmt(src.sheetV)}` : '';
+    const srcNote = S.id === DEFAULT_ID
+      ? (S.tamLive.at
+        ? `Giá đồng bộ tam300.com lúc ${new Date(S.tamLive.at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}${sheetDiffNote}`
+        : (S.tamLive.loading ? 'Đang đồng bộ giá live từ tam300.com… (tạm dùng giá Sheet)' : 'Dùng giá hiện có trên site (Sheet)'))
+      : 'Tính theo giá hiện có trong bảng dữ liệu';
+    const isNonDefaultModel = cmp.srcModel && cmp.srcModel.id !== cmp.defaultModelId;
+    cmpHtml = `<section class="card cmp15-card" style="margin-top:12px">
+      <h3>So sánh &amp; tính giá bù <small><a href="https://tam300.com/thu-mua" target="_blank" rel="noopener">Chính sách TAM300 ↗</a></small></h3>
+      <div class="cmp-bar">
+        <span>Đổi từ <b>${esc(cmp.srcModel.label)}</b></span>
+        <span class="cmp-bar-acts">
+          ${isNonDefaultModel && !cmp.dstMeta.is15Pm ? '<button type="button" class="cmp15-pill" id="cmpResetBtn">↺ Về 15 Pro Max</button>' : ''}
+          <button type="button" class="cmp15-pill" id="cmpPickBtn" aria-expanded="${S.cmpPickOpen}">${S.cmpPickOpen ? 'Ẩn danh sách ▴' : '⇄ So với model khác'}</button>
+        </span>
+      </div>
+      ${S.cmpPickOpen ? `<div class="cmp-pick" id="cmpPickBox">
+        <div class="cmp-lbl">Chọn máy mang đổi để đối chiếu giá:</div>
+        <div class="cmp15-opts">${cmp.models.map(m =>
+          `<button type="button" class="cmp15-pill" data-cmodel="${esc(m.id)}" aria-pressed="${m.id === cmp.srcModel.id}">${esc(m.label)}</button>`
+        ).join('')}</div>
+      </div>` : ''}
       <div class="sub" style="margin-bottom:6px">${esc(srcNote)}</div>
-      ${pm15List.length > 1 ? `<div class="cmp15-opts">${pm15List.map(x =>
-        `<button type="button" class="cmp15-pill" data-pm15="${esc(x.key)}" aria-pressed="${x.key === pm15.key}">15PM ${esc(x.pill)}</button>`
+      ${cmp.srcVariants.length > 1 ? `<div class="cmp15-opts">${cmp.srcVariants.map(x =>
+        `<button type="button" class="cmp15-pill" data-pm15="${esc(x.key)}" aria-pressed="${x.key === src.key}">${esc(x.pill)}</button>`
       ).join('')}</div>` : ''}
+      ${cmp.dstVariants.length > 1 ? `<div class="cmp-lbl">Màu máy muốn lấy (${esc(i.label)}):</div>
+        <div class="cmp15-opts">${cmp.dstVariants.map(d =>
+          `<button type="button" class="cmp15-pill" data-dst="${esc(d.key)}" aria-pressed="${d.key === cmp.pickDst.key}">${esc(d.pill)}</button>`
+        ).join('')}</div>` : ''}
       <div class="cmp15-opts">${TAM300_FEES.map(([id, lbl]) =>
         `<button type="button" class="cmp15-pill" data-fee="${id}" aria-pressed="${id === S.cmp15Fee}">${lbl}</button>`).join('')}</div>
-      <div class="ev"><span>Giá ${esc(i.label)}</span><b class="n">${fmt(i.v)}</b></div>
-      <div class="ev"><span>Thu ${esc(pm15.label)} (100% giá bán)</span><span class="n" style="color:var(--down)">−${fmt(pm15.v)}</span></div>
+      <div class="ev"><span>Giá ${esc(dstLabel)}</span><b class="n">${fmt(dstV)}</b></div>
+      <div class="ev"><span>Thu ${esc(src.label)} (100% giá bán)</span><span class="n" style="color:var(--down)">−${fmt(src.v)}</span></div>
       <div class="ev"><span>Chênh lệch 2 máy</span><span class="n">${diff >= 0 ? '+' : '−'}${fmt(Math.abs(diff))}</span></div>
       <div class="ev"><span>Phí dịch vụ TAM300</span><span class="n">+${fmt(feeMin)}${feeMax > feeMin ? ' – ' + fmt(feeMax) : ''}</span></div>
       <div class="ev"><b>Tổng tiền bù dự kiến</b><span class="n cmp15-total">${payText}</span></div>
+      ${diff < 0 && src.itemKey !== i.key ? `<div style="margin-top:8px"><button type="button" class="cmp15-pill" data-swap="${esc(src.itemKey)}" data-smodel="${esc(cmp.dstMeta.id)}">⇄ Đảo chiều: Từ ${esc(i.label)} lên ${esc(cmp.srcModel.label)}</button></div>` : ''}
       <div class="more">Theo tam300.com/thu-mua: thu máy bằng 100% giá bán công khai; chưa gồm chênh lệch phụ phí pin hoặc ngoại hình thực tế.</div>
     </section>`;
   }
+  const sheetHint = i.sheetV != null && i.sheetV !== i.v ? ` <span class="sub">· Sheet cũ ${fmt(i.sheetV)}</span>` : '';
+  const tierHint = i.tiers?.length > 1 ? ` <span class="sub">· từ ${fmtC(i.v)} (${i.tiers.length} mức giá theo màu)</span>` : '';
+  const cmpBtnLabel = cmp.dstMeta.is15Pm ? '⇄ So sánh với máy khác' : '⇄ So với 15 Pro Max';
   $('dlgBody').innerHTML = `<div class="dlg-h"><div><div class="pgrp">${esc(i.group)}</div><h2>${esc(i.label)}</h2></div>
       <button type="button" class="btn icon" id="dlgClose" aria-label="Đóng">✕</button></div>
-    <div class="big-row"><div class="big">${fmt(i.v)}</div>${pm15 ? `<button type="button" class="btn cmp15-btn${S.cmp15Open ? ' tint' : ''}" id="cmp15Btn" aria-expanded="${S.cmp15Open}">⇄ So với 15 Pro Max</button>` : ''}</div>
-    <div class="row">${chg(i.chg, i.base)} <span class="verdict ${verdict[0]}">${verdict[1]}</span></div>
-    ${cmp15Html}
+    <div class="big-row"><div class="big">${fmt(dstV)}</div>${src ? `<button type="button" class="btn cmp15-btn${S.cmp15Open ? ' tint' : ''}" id="cmp15Btn" aria-expanded="${S.cmp15Open}">${cmpBtnLabel}</button>` : ''}</div>
+    <div class="row">${chg(i.chg, i.base)} <span class="verdict ${verdict[0]}">${verdict[1]}</span>${tierHint}${sheetHint}</div>
+    ${cmpHtml}
     <div class="stats"><div><span>Thấp nhất</span><b>${fmt(i.lo)}</b></div><div><span>Cao nhất</span><b>${fmt(i.hi)}</b></div>
       <div><span>Trung bình</span><b>${fmt(Math.round(i.mean))}</b></div><div><span>Số lần đổi giá</span><b>${i.changes}</b></div>
       <div><span>Đổi giá lần cuối</span><b>${i.lastT && i.changes ? fmtD(i.lastT) : '—'}</b></div></div>
@@ -777,18 +904,25 @@ async function fetchSheet(ref, live) {
   return { text, log, time: new Date(), auto: false };
 }
 const fmtTime = d => `${d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} ngày ${fmtD(d)}`;
+function updateStatus(time, auto) {
+  const base = `${auto ? 'quét tự động lúc 10:00 sáng' : 'lấy trực tiếp từ Google Sheet'}`;
+  const liveNote = S.id === DEFAULT_ID && S.tamLive.at
+    ? ` · đồng bộ live tam300.com${S.tamLive.synced ? ` (${S.tamLive.synced} mẫu mới)` : ''}` : '';
+  $('status').innerHTML = `Cập nhật lúc <b>${fmtTime(time)}</b> · ${base}${liveNote}`;
+}
 async function load(link, live) {
   const ref = sheetRef(link);
   $('err').hidden = true;
   if (!ref) { showErr('Link không đúng dạng Google Sheet.'); return; }
   $('refresh').disabled = true; $('refresh').textContent = 'Đang cập nhật…';
-  fetch15PmLive(live);
+  if (ref.id === DEFAULT_ID) fetchTamLive(live);
   try {
     const { text, log, time, auto } = await fetchSheet(ref, live);
     const all = parseCSV(text);
     if (!all.length) throw 1;
     const same = live && S.link === link;
     S.headers = all[0]; S.rows = all.slice(1); S.link = link; S.id = ref.id; S.gid = ref.gid;
+    S.lastLoad = { time, auto };
     if (!same) {
       S.group = ''; S.q = ''; $('q').value = ''; S.watchOnly = false; S.rawJ = null; S.open = null;
       try { S.watch = new Set(JSON.parse(localStorage.getItem(`watch:${ref.id}:${ref.gid}`) || '[]')); } catch { S.watch = new Set(); }
@@ -798,7 +932,7 @@ async function load(link, live) {
     S.log = parseLog(log, text);
     S.items = buildItems();
     $('report').hidden = false;
-    $('status').innerHTML = `Cập nhật lúc <b>${fmtTime(time)}</b> · ${auto ? 'quét tự động lúc 10:00 sáng hằng ngày' : 'lấy trực tiếp từ Google Sheet'}`;
+    updateStatus(time, auto);
     if (!live) $('scanNote').textContent = auto
       ? 'Sheet này được quét giá tự động lúc 10:00 sáng mỗi ngày. Bấm “Cập nhật ngay” để lấy giá mới nhất bất cứ lúc nào.'
       : 'Sheet này chưa nằm trong danh sách quét tự động (file sheets.txt trong repo) — giá được lấy trực tiếp mỗi lần mở trang.';
@@ -855,9 +989,18 @@ document.addEventListener('click', e => {
   const th = t.closest('#tHead th'); if (th) { const k = th.dataset.k; if (k === 'star' || k === 'spark') return; S.sortDir = S.sortK === k ? -S.sortDir : 1; S.sortK = k; render(); return; }
   const rh = t.closest('#rHead th'); if (rh) { const j = +rh.dataset.j; S.rawDir = S.rawJ === j ? -S.rawDir : 1; S.rawJ = j; render(); return; }
   const row = t.closest('#tBody tr[data-k], .mv[data-k]'); if (row) { openDetail(row.dataset.k); return; }
-  if (t.id === 'cmp15Btn' && S.open) { S.cmp15Open = !S.cmp15Open; openDetail(S.open, true); return; }
+  if (t.closest('#cmp15Btn') && S.open) {
+    S.cmp15Open = !S.cmp15Open;
+    if (S.cmp15Open && !S.cmpModel && modelMetaOf(S.items.find(x => x.key === S.open) || { label: '' }).is15Pm) S.cmpPickOpen = true;
+    openDetail(S.open, true); return;
+  }
+  if (t.closest('#cmpPickBtn') && S.open) { S.cmpPickOpen = !S.cmpPickOpen; openDetail(S.open, true); return; }
+  if (t.closest('#cmpResetBtn') && S.open) { S.cmpModel = ''; S.cmp15Key = ''; S.cmpPickOpen = false; openDetail(S.open, true); return; }
+  const cmBtn = t.closest('[data-cmodel]'); if (cmBtn && S.open) { S.cmpModel = cmBtn.dataset.cmodel; S.cmp15Key = ''; S.cmpPickOpen = false; openDetail(S.open, true); return; }
   const pm15Btn = t.closest('[data-pm15]'); if (pm15Btn && S.open) { S.cmp15Key = pm15Btn.dataset.pm15; openDetail(S.open, true); return; }
+  const dstBtn = t.closest('[data-dst]'); if (dstBtn && S.open) { S.cmpDstKey = dstBtn.dataset.dst; openDetail(S.open, true); return; }
   const feeBtn = t.closest('[data-fee]'); if (feeBtn && S.open) { S.cmp15Fee = feeBtn.dataset.fee; openDetail(S.open, true); return; }
+  const swBtn = t.closest('[data-swap]'); if (swBtn && S.open) { S.cmpModel = swBtn.dataset.smodel || ''; S.cmp15Key = ''; S.cmpDstKey = ''; S.cmpPickOpen = false; openDetail(swBtn.dataset.swap, true, true); return; }
   if (t.id === 'dlgClose' || t === $('dlg')) closeDlg();
 });
 
