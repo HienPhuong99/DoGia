@@ -253,11 +253,8 @@ dialog[open]{animation:sheet .5s var(--out)}
     <div id="track-area">
       <div class="grid">
         <section class="card wide" id="feedCard" hidden><h3>Biến động giá gần đây <small id="feedNote"></small></h3><div class="feed" id="feed"></div></section>
-        <section class="card wide"><h3><span id="idxTitle">Chỉ số giá trung bình</span><small id="idxNote"></small></h3><div class="chart" id="idxChart" data-h="220"></div></section>
         <section class="card"><h3>Giảm giá mạnh nhất <small id="periodA"></small></h3><div id="moversDown"></div></section>
         <section class="card"><h3>Tăng giá mạnh nhất <small id="periodB"></small></h3><div id="moversUp"></div></section>
-        <section class="card" id="grpCard"></section>
-        <section class="card" id="segCard"></section>
       </div>
       <h3 style="margin:18px 0 8px">Bảng theo dõi giá <small>bấm vào một dòng để xem lịch sử giá</small></h3>
       <div class="tablewrap"><table id="track"><thead id="tHead"></thead><tbody id="tBody"></tbody></table></div>
@@ -353,7 +350,6 @@ function analyze() {
   $('r-group').innerHTML = opts(texts, S.role.group, '(không nhóm)');
   $('r-date').innerHTML = opts(dates, S.role.date, '(không có)');
 }
-const colName = j => S.cols.find(c => c.j === j)?.name || '';
 const textKey = r => S.cols.filter(c => c.type === 'text').map(c => (r[c.j] || '').trim()).join(' | ');
 const rowLabel = r => S.cols.filter(c => c.type === 'text' && c.j !== S.role.group).map(c => (r[c.j] || '').trim()).filter(Boolean).join(' · ') || textKey(r) || '—';
 
@@ -479,7 +475,6 @@ function seg(el) {
   lensAt[el.id] = to;
 }
 const hostOf = s => { try { return new URL(s).hostname.replace(/^www\./, ''); } catch { return ''; } };
-function niceStep(range, n) { const raw = range / n, p = 10 ** Math.floor(Math.log10(raw || 1)); return [1, 2, 2.5, 5, 10].map(m => m * p).find(s => s >= raw); }
 
 /* ---------- vẽ báo cáo ---------- */
 function filtered() {
@@ -521,7 +516,6 @@ function renderKpis(rows, items) {
   $('kpis').innerHTML = k.map(([t, b, s], n) => `<div class="kpi" style="--i:${n}"><span>${esc(t)}</span><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join('');
 }
 function renderTracking(items, t0) {
-  const R = S.role, vName = colName(R.value);
   // Biến động gần đây (tab "Biến động")
   $('feedCard').hidden = !S.log;
   if (S.log) {
@@ -534,37 +528,12 @@ function renderTracking(items, t0) {
         <span class="n">${e.prev != null ? `<s>${fmtC(e.prev)}</s> ` : ''}<b>${fmt(e.p)}</b></span>${e.prev != null ? chg(e.p - e.prev, e.prev) : '<span></span>'}</div>`;
     }).join('') || '<div class="sub">Chưa có lần đổi giá nào khớp bộ lọc</div>';
   }
-  // Chỉ số giá trung bình theo thời gian
-  const ds = [...new Set(items.flatMap(i => i.pts.map(x => x.t)).filter(t => t && t > t0).map(Number))].sort((a, b) => a - b);
-  const idx = [+t0, ...ds].map(t => ({ t: new Date(t), p: avg(items.map(i => at(i.pts, new Date(t)))) }));
-  $('idxTitle').textContent = `${vName} trung bình — ${periodName()}`;
-  $('idxNote').textContent = items.length ? `${items.length} mẫu · rê chuột để xem từng ngày` : '';
-  if (items.length) drawLine($('idxChart'), idx, t0, { label: 'Chỉ số giá trung bình', estUntil: items.some(i => i.est) && ds.length ? new Date(ds[0]) : null });
-  else $('idxChart').innerHTML = '<div class="sub">Không có mẫu phù hợp</div>';
   // Top biến động
   const mover = i => `<div class="mv" data-k="${esc(i.key)}"><span class="ml">${esc(i.label)}<div class="pgrp">${esc(i.group)}</div></span><span class="n">${fmt(i.v)}</span>${chg(i.chg, i.base)}</div>`;
   const dn = items.filter(i => i.chg < 0).sort((a, b) => a.pc - b.pc), up = items.filter(i => i.chg > 0).sort((a, b) => b.pc - a.pc);
   $('periodA').textContent = $('periodB').textContent = periodName();
   $('moversDown').innerHTML = dn.slice(0, 6).map(mover).join('') || '<div class="sub">Không có mẫu nào giảm giá trong kỳ</div>';
   $('moversUp').innerHTML = up.slice(0, 6).map(mover).join('') || '<div class="sub">Không có mẫu nào tăng giá trong kỳ</div>';
-  // Theo nhóm
-  if (R.group != null && !S.group) {
-    const g = new Map(); items.forEach(i => (g.get(i.group) || g.set(i.group, []).get(i.group)).push(i));
-    $('grpCard').hidden = false;
-    $('grpCard').innerHTML = bars(`Giá trung bình theo ${colName(R.group)}`, scale([...g].map(([label, a]) => {
-      const now = avg(a.map(i => i.v)), base = avg(a.map(i => i.base));
-      return { label: label || '(trống)', now, html: `${fmtC(now)} ${chg(Math.round(now - base), base)}`,
-        tip: `${label}: ${a.length} mẫu · từ ${fmt(Math.min(...a.map(i => i.v)))} đến ${fmt(Math.max(...a.map(i => i.v)))}` };
-    }), 'now'), '', periodName());
-  } else $('grpCard').hidden = true;
-  // Phân khúc giá
-  if (items.length > 1) {
-    const vs = items.map(i => i.v), mn = Math.min(...vs), mx = Math.max(...vs), st = niceStep(mx - mn, 6), b0 = Math.floor(mn / st) * st;
-    const bk = []; for (let a = b0; a <= mx; a += st) bk.push({ a, b: a + st, n: vs.filter(v => v >= a && v < a + st).length });
-    $('segCard').hidden = false;
-    $('segCard').innerHTML = bars('Phân khúc giá', scale(bk.map(x => ({ label: `${fmtC(x.a)} – ${fmtC(x.b)}`, n: x.n,
-      text: `${x.n} mẫu · ${Math.round(x.n / items.length * 100)}%` })), 'n'), '', 'số mẫu theo khoảng giá');
-  } else $('segCard').hidden = true;
   // Bảng theo dõi
   const cols = [['star', '', ''], ['label', 'Sản phẩm', ''], ['v', 'Giá hiện tại', 'n'], ['chg', `Thay đổi (${periodName()})`, 'n hide-m'],
     ['spark', 'Xu hướng', 'hide-m'], ['pos', 'Thấp – Cao đã ghi nhận', 'hide-m'], ['lastT', 'Đổi giá lần cuối', 'hide-m']];
