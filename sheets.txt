@@ -1,0 +1,2 @@
+# Mỗi dòng 1 link Google Sheet (đã chia sẻ công khai) cần chụp lịch sử giá tự động.
+https://docs.google.com/spreadsheets/d/1pXlE41ArlhpHfkVwq83HpsHe2Y5-L6EhdHxBrqOkNdY/edit?gid=0
