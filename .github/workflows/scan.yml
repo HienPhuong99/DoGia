@@ -11,6 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 .github/scan.py
+      - run: python3 .github/scan_hk.py   # Hoàng Kiên không có CORS -> quét phía server
+        continue-on-error: true
       - run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
