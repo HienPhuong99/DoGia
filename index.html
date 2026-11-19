@@ -202,6 +202,16 @@ dialog::backdrop{background:rgba(0,0,0,.22);-webkit-backdrop-filter:blur(4px);ba
 .cmp15-pill:active{transform:scale(.93);transition-duration:.08s}
 .cmp15-pill[aria-pressed=true]{background:var(--accent);color:#fff;border-color:transparent;font-weight:600}
 .cmp15-total{font-size:18px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.cmp15-card.quiet{animation:none}
+.up-seg{display:flex;width:100%;margin:4px 0 8px;touch-action:manipulation}
+.up-seg button{flex:1 1 0;min-width:0;padding:7px 8px;font-size:12px;line-height:1.25;white-space:normal}
+.cmp15-card .up-in{align-items:center}
+.up-in input[type=text]{width:132px;text-align:right;padding:6px 10px;border-radius:12px;font-variant-numeric:tabular-nums}
+.up-in input[type=checkbox]{width:18px;height:18px;padding:0;accent-color:var(--accent)}
+.cmp15-card .up-cmp .ev{grid-template-columns:1fr auto auto}
+.up-cmp .ev>:not(:first-child){text-align:right;min-width:92px}
+.up-cmp .ev.h>*{font-size:12px;color:var(--muted);font-weight:600}
+.up-verdict{margin-top:10px}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:12px 0}
 .stats div{background:var(--track);border-radius:16px;padding:9px 12px}
 .stats span{display:block;font-size:12px;color:var(--muted)}
@@ -312,6 +322,7 @@ const today = new Date(); today.setHours(0, 0, 0, 0);
 const S = { link: '', id: '', gid: '0', headers: [], rows: [], cols: [], role: {}, log: null,
   q: '', group: '', watchOnly: false, sortK: 'chg', sortDir: 1, rawJ: null, rawDir: 1, range: 30, watch: new Set(), items: [], open: null,
   cmp15Open: false, cmpPickOpen: false, cmpModel: '', cmp15Key: '', cmpDstKey: '', cmp15Fee: 'ext',
+  upMode: 'pa1', hk: { type: 'bh', pin: 90, baoTri: false, dHinh: 0, dT: 0, price: '', color: '', for: '' }, hkData: null,
   tamLive: { map: new Map(), at: 0, loading: false, err: false } };
 
 /* ---------- tiện ích ---------- */
@@ -820,7 +831,7 @@ function buildCmpState(targetItem) {
       if (x.tiers?.length) {
         for (const t of x.tiers) {
           srcVariants.push({
-            key: t.key, itemKey: x.key, cap: t.cap, capN: t.capN, v: t.v, sheetV: x.sheetV, live: true,
+            key: t.key, itemKey: x.key, cap: t.cap, capN: t.capN, v: t.v, sheetV: x.sheetV, live: true, colors: t.colors || [],
             label: `${srcModel.label} · ${t.cap}${t.colorLabel ? ' · ' + t.colorLabel : ''}`,
             pill: `${t.cap}${t.colorLabel ? ' ' + t.colorLabel : ''} (${fmtC(t.v)})`,
           });
@@ -853,6 +864,7 @@ function openDetail(key, refresh, keepCmp) {
   if (S.open !== key && !keepCmp) { S.cmp15Key = ''; S.cmpDstKey = ''; S.cmpModel = ''; S.cmpPickOpen = false; }
   S.open = key;
   if (S.id === DEFAULT_ID && !S.tamLive.at && !tamInflight) fetchTamLive();
+  if (S.cmp15Open) loadHK();
   const t0 = periodStart(); withPeriod([i], t0);
   const sameGrp = S.items.filter(x => x.group === i.group);
   const verdict = i.hi === i.lo ? ['', 'Chưa ghi nhận thay đổi giá'] : i.v <= i.lo ? ['down', 'Giá thấp nhất từng ghi nhận']
@@ -864,7 +876,10 @@ function openDetail(key, refresh, keepCmp) {
   let cmpHtml = '';
   if (src && S.cmp15Open) {
     const [, , feeMin, feeMax] = TAM300_FEES.find(f => f[0] === S.cmp15Fee) || TAM300_FEES[0];
-    const diff = dstV - src.v, payMin = diff + feeMin, payMax = diff + feeMax;
+    const H = S.hk;
+    if (H.for !== src.key) { H.price = ''; H.color = ''; H.for = src.key; }
+    const pa1 = calcPA1(dstV, src.v, feeMin, feeMax, H.dT);
+    const diff = pa1.diff, [payMin, payMax] = pa1.bu;
     const payText = payMax <= 0
       ? `Không cần bù (máy cũ cao hơn ${fmt(Math.abs(payMax))}${payMin < payMax ? ' – ' + fmt(Math.abs(payMin)) : ''})`
       : payMin <= 0 ? `0 – ${fmt(payMax)}` : `${fmt(payMin)}${payMax > payMin ? ' – ' + fmt(payMax) : ''}`;
@@ -877,8 +892,70 @@ function openDetail(key, refresh, keepCmp) {
         : (S.tamLive.loading ? 'Đang đồng bộ giá live từ tam300.com… (tạm dùng giá Sheet)' : 'Dùng giá hiện có trên site (Sheet)'))
       : 'Tính theo giá hiện có trong bảng dữ liệu';
     const isNonDefaultModel = cmp.srcModel && cmp.srcModel.id !== cmp.defaultModelId;
-    cmpHtml = `<section class="card cmp15-card" style="margin-top:12px">
+    // PA2: bán Hoàng Kiên lấy tiền mặt + mua máy mới TAM300
+    const colors = src.colors || [], hkColor = colors.includes(H.color) ? H.color : colors[0] || '';
+    const hkAuto = hkLookup(S.hkData?.items, cmp.srcModel.label, src.cap, hkColor, H.pin);
+    const O_HK = H.price !== '' ? +H.price : hkAuto?.price ?? null;
+    const R = O_HK ? compareUpgrade({ N: dstV, O_T: src.v, feeMin, feeMax, D_T: H.dT, O_HK, type: H.type, pin: H.pin, baoTri: H.baoTri, Dhinh: H.dHinh }) : null;
+    const rng2 = (a, b) => a === b ? fmt(a) : `${fmt(a)} – ${fmt(b)}`;
+    const sgn = n => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
+    const hkTime = S.hkData?.time ? fmtTime(new Date(S.hkData.time)) : '';
+    const hkNote = S.hkData === false ? 'Đang tải giá Hoàng Kiên…'
+      : hkAuto ? `Giá web HK (${COLOR_MAP[hkColor] || hkColor} · ${hkTier(H.pin)}) tự điền: ${fmt(hkAuto.price)} · Giá HK cập nhật lúc ${hkTime}`
+      : S.hkData?.items?.length ? `Không khớp giá HK cho ${cmp.srcModel.label} ${src.cap}${hkColor ? ' ' + hkColor : ''}${hkTier(H.pin) ? ' · ' + hkTier(H.pin) : ' (pin dưới 80%)'} — nhập tay giá web HK${hkTime ? ' · Giá HK cập nhật lúc ' + hkTime : ''}`
+      : 'Chưa có dữ liệu giá Hoàng Kiên (data/hoangkien.json) — nhập tay giá web HK';
+    const numIn = (id, val, ph) => `<input type="text" inputmode="numeric" id="${id}" value="${val ? esc(val) : ''}" placeholder="${esc(ph)}" autocomplete="off">`;
+    const srcFoot = `<div class="more">Nguồn: <a href="https://tam300.com/thu-mua" target="_blank" rel="noopener">tam300.com/thu-mua</a> · <a href="https://www.hoangkien.com/mua-lai" target="_blank" rel="noopener">hoangkien.com/mua-lai</a>. Chưa gồm trừ tình trạng thực tế khi thẩm định, giá chốt theo cửa hàng.</div>`;
+    const verdictText = !R ? '' : R.verdict === 'pa2' ? ['down', `PA2 (bán HK + mua TAM300) rẻ hơn ${rng2(R.chenh[0], R.chenh[1])}`]
+      : R.verdict === 'pa1' ? ['up', `PA1 (lên đời TAM300) rẻ hơn ${rng2(-R.chenh[1], -R.chenh[0])}`]
+      : ['', `Gần như hòa (chênh ${sgn(R.chenh[0])} … ${sgn(R.chenh[1])} tùy phí TAM300)`];
+    const pa1Body = `
+      <div class="ev"><span>Giá ${esc(dstLabel)}</span><b class="n">${fmt(dstV)}</b></div>
+      <div class="ev"><span>Thu ${esc(src.label)} (100% giá bán)</span><span class="n" style="color:var(--down)">−${fmt(src.v)}</span></div>
+      <div class="ev"><span>Chênh lệch 2 máy</span><span class="n">${diff >= 0 ? '+' : '−'}${fmt(Math.abs(diff))}</span></div>
+      <div class="ev"><span>Phí dịch vụ TAM300</span><span class="n">+${fmt(feeMin)}${feeMax > feeMin ? ' – ' + fmt(feeMax) : ''}</span></div>
+      <label class="ev up-in"><span>Trừ tình trạng thực tế (nhập tay)</span>${numIn('hkDT', H.dT, '0')}</label>
+      <div class="ev"><b>Tổng tiền bù dự kiến</b><span class="n cmp15-total">${payText}</span></div>
+      ${diff < 0 && src.itemKey !== i.key ? `<div style="margin-top:8px"><button type="button" class="cmp15-pill" data-swap="${esc(src.itemKey)}" data-smodel="${esc(cmp.dstMeta.id)}">⇄ Đảo chiều: Từ ${esc(i.label)} lên ${esc(cmp.srcModel.label)}</button></div>` : ''}
+      <div class="more">Theo tam300.com/thu-mua: thu máy bằng 100% giá bán công khai; chưa gồm chênh lệch phụ phí pin hoặc ngoại hình thực tế.</div>`;
+    const pa2Body = `
+      <div class="cmp-lbl">Bán ${esc(src.label)} cho Hoàng Kiên:</div>
+      <div class="cmp15-opts">${HK_TYPES.map(([id, lbl, r]) =>
+        `<button type="button" class="cmp15-pill" data-hkt="${id}" aria-pressed="${id === H.type}">${lbl} (${Math.round(r * 100)}%)</button>`).join('')}</div>
+      ${colors.length > 1 ? `<div class="cmp15-opts">${colors.map(c =>
+        `<button type="button" class="cmp15-pill" data-hkc="${esc(c)}" aria-pressed="${c === hkColor}">${esc(c)} → ${esc(COLOR_MAP[c] || c)}</button>`).join('')}</div>` : ''}
+      <label class="ev up-in"><span>% pin máy cũ</span>${numIn('hkPin', H.pin, '90')}</label>
+      <label class="ev up-in"><span>Pin cần bảo trì</span><input type="checkbox" id="hkBT"${H.baoTri ? ' checked' : ''}></label>
+      <label class="ev up-in"><span>Trừ hình thức (nhập tay)</span>${numIn('hkDH', H.dHinh, '0')}</label>
+      <label class="ev up-in"><span>Giá web HK${hkAuto && H.price === '' ? ' (tự điền)' : ''}</span>${numIn('hkPrice', H.price, hkAuto ? fmt(hkAuto.price) : 'Nhập giá')}</label>
+      <div class="sub" style="margin:4px 0 6px">${esc(hkNote)}</div>
+      ${R ? `
+      <div class="ev"><span>Giá web HK × ${Math.round(R.hk.r * 100)}%</span><span class="n">${fmt(R.hk.gross)}</span></div>
+      ${R.hk.K ? `<div class="ev"><span>Trừ máy dưới 10 triệu</span><span class="n" style="color:var(--down)">−${fmt(R.hk.K)}</span></div>` : ''}
+      ${R.hk.Dpin ? `<div class="ev"><span>Trừ pin${H.baoTri ? ' cần bảo trì' : ' 80–85%'}</span><span class="n" style="color:var(--down)">−${fmt(R.hk.Dpin)}</span></div>` : ''}
+      ${R.hk.Dhinh ? `<div class="ev"><span>Trừ hình thức</span><span class="n" style="color:var(--down)">−${fmt(R.hk.Dhinh)}</span></div>` : ''}
+      <div class="ev"><b>HK trả tiền mặt</b><b class="n">${fmt(R.hk.thu)}</b></div>
+      <div class="ev"><span>Mua ${esc(dstLabel)} tại TAM300</span><span class="n">${fmt(dstV)}</span></div>
+      <div class="ev"><b>Tổng tiền bù dự kiến</b><span class="n cmp15-total">${R.bu2 <= 0 ? `Không cần bù (dư ${fmt(-R.bu2)})` : fmt(R.bu2)}</span></div>
+      ${R.hk.r < .9 ? '<div class="more">Tỷ lệ thu: trang HK chỗ ghi 85% chỗ ghi 90% — nên gọi hỏi lại trước khi bán.</div>' : ''}` : ''}
+      ${srcFoot}`;
+    const cmpBody = !R ? `<div class="sub" style="margin:8px 0">Chưa có giá web HK cho máy cũ — chọn tab PA2 để nhập.</div>${srcFoot}` : `
+      <div class="up-cmp">
+        <div class="ev h"><span></span><span>PA1: TAM300</span><span>PA2: HK + TAM300</span></div>
+        <div class="ev"><span>Giá ${esc(dstLabel)}</span><span class="n">${fmt(dstV)}</span><span class="n">${fmt(dstV)}</span></div>
+        <div class="ev"><span>Thu máy cũ</span><span class="n" style="color:var(--down)">−${fmt(src.v)}</span><span class="n" style="color:var(--down)">−${fmt(R.hk.thu)}</span></div>
+        <div class="ev"><span>Phí dịch vụ TAM300</span><span class="n">+${rng2(feeMin, feeMax)}</span><span class="n">—</span></div>
+        ${H.dT ? `<div class="ev"><span>Trừ tình trạng (TAM300)</span><span class="n">+${fmt(H.dT)}</span><span class="n">—</span></div>` : ''}
+        <div class="ev"><b>Tổng tiền bù</b><b class="n">${rng2(R.pa1.bu[0], R.pa1.bu[1])}</b><b class="n">${fmt(R.bu2)}</b></div>
+      </div>
+      <div class="ev"><span>Chênh lệch (PA1 − PA2)</span><span class="n">${R.chenh[0] === R.chenh[1] ? sgn(R.chenh[0]) : `${sgn(R.chenh[0])} … ${sgn(R.chenh[1])}`}</span></div>
+      <div class="ev"><span>Điểm hòa vốn: HK cần trả tối thiểu</span><span class="n">${rng2(R.breakEven[0], R.breakEven[1])}</span></div>
+      <div class="up-verdict"><span class="verdict ${verdictText[0]}">${verdictText[1]}</span></div>
+      ${srcFoot}`;
+    cmpHtml = `<section class="card cmp15-card${quietCmp ? ' quiet' : ''}" style="margin-top:12px">
       <h3>So sánh &amp; tính giá bù <small><a href="https://tam300.com/thu-mua" target="_blank" rel="noopener">Chính sách TAM300 ↗</a></small></h3>
+      <div class="seg up-seg" id="upSeg" role="group" aria-label="Phương án lên đời">${[['pa1', 'PA1: Lên đời TAM300'], ['pa2', 'PA2: Bán HK + mua TAM300'], ['cmp', 'So sánh']].map(([id, t]) =>
+        `<button type="button" data-up="${id}" aria-pressed="${id === S.upMode}">${t}</button>`).join('')}</div>
       <div class="cmp-bar">
         <span>Đổi từ <b>${esc(cmp.srcModel.label)}</b></span>
         <span class="cmp-bar-acts">
@@ -900,15 +977,9 @@ function openDetail(key, refresh, keepCmp) {
         <div class="cmp15-opts">${cmp.dstVariants.map(d =>
           `<button type="button" class="cmp15-pill" data-dst="${esc(d.key)}" aria-pressed="${d.key === cmp.pickDst.key}">${esc(d.pill)}</button>`
         ).join('')}</div>` : ''}
-      <div class="cmp15-opts">${TAM300_FEES.map(([id, lbl]) =>
-        `<button type="button" class="cmp15-pill" data-fee="${id}" aria-pressed="${id === S.cmp15Fee}">${lbl}</button>`).join('')}</div>
-      <div class="ev"><span>Giá ${esc(dstLabel)}</span><b class="n">${fmt(dstV)}</b></div>
-      <div class="ev"><span>Thu ${esc(src.label)} (100% giá bán)</span><span class="n" style="color:var(--down)">−${fmt(src.v)}</span></div>
-      <div class="ev"><span>Chênh lệch 2 máy</span><span class="n">${diff >= 0 ? '+' : '−'}${fmt(Math.abs(diff))}</span></div>
-      <div class="ev"><span>Phí dịch vụ TAM300</span><span class="n">+${fmt(feeMin)}${feeMax > feeMin ? ' – ' + fmt(feeMax) : ''}</span></div>
-      <div class="ev"><b>Tổng tiền bù dự kiến</b><span class="n cmp15-total">${payText}</span></div>
-      ${diff < 0 && src.itemKey !== i.key ? `<div style="margin-top:8px"><button type="button" class="cmp15-pill" data-swap="${esc(src.itemKey)}" data-smodel="${esc(cmp.dstMeta.id)}">⇄ Đảo chiều: Từ ${esc(i.label)} lên ${esc(cmp.srcModel.label)}</button></div>` : ''}
-      <div class="more">Theo tam300.com/thu-mua: thu máy bằng 100% giá bán công khai; chưa gồm chênh lệch phụ phí pin hoặc ngoại hình thực tế.</div>
+      ${S.upMode !== 'pa2' ? `<div class="cmp15-opts">${TAM300_FEES.map(([id, lbl]) =>
+        `<button type="button" class="cmp15-pill" data-fee="${id}" aria-pressed="${id === S.cmp15Fee}">${lbl}</button>`).join('')}</div>` : ''}
+      ${S.upMode === 'pa2' ? pa2Body : S.upMode === 'cmp' ? cmpBody : pa1Body}
     </section>`;
   }
   const sheetHint = i.sheetV != null && i.sheetV !== i.v ? ` <span class="sub">· Sheet cũ ${fmt(i.sheetV)}</span>` : '';
@@ -934,8 +1005,29 @@ function openDetail(key, refresh, keepCmp) {
   if (!refresh || !$('dlg').open) $('dlg').showModal();
   const est = i.est ? (i.pts.find(x => x.t)?.t || today) : null;
   drawLine($('dlgChart'), series(i.pts, t0), t0, { label: 'Lịch sử giá ' + i.label, estUntil: est && est > t0 ? est : null });
-  seg($('dlgRange'));
+  seg($('dlgRange')); seg($('upSeg'));
 }
+let quietCmp = false; // vẽ lại khi đang gõ ô nhập: bỏ hiệu ứng thả thẻ
+// Giá Hoàng Kiên do GitHub Actions quét (trang HK không có CORS nên không đọc thẳng từ trình duyệt được)
+function loadHK() {
+  if (S.hkData !== null) return;
+  S.hkData = false;
+  fetch(`data/hoangkien.json?_=${Date.now()}`).then(r => r.ok ? r.json() : Promise.reject())
+    .then(j => { S.hkData = j; }, () => { S.hkData = { items: [] }; })
+    .finally(() => { if (S.open && $('dlg').open && S.cmp15Open && S.upMode !== 'pa1') openDetail(S.open, true); });
+}
+const HK_INPUTS = { hkPin: 'pin', hkDH: 'dHinh', hkDT: 'dT', hkPrice: 'price' };
+document.addEventListener('input', e => {
+  const k = HK_INPUTS[e.target.id]; if (!k || !S.open) return;
+  const el = e.target, digits = el.value.replace(/\D/g, ''), pos = el.selectionStart;
+  S.hk[k] = k === 'price' ? digits : +digits || 0;
+  quietCmp = true; openDetail(S.open, true); quietCmp = false;
+  const again = $(el.id); again.focus(); try { again.setSelectionRange(pos, pos); } catch { }
+});
+document.addEventListener('change', e => {
+  if (e.target.id !== 'hkBT' || !S.open) return;
+  S.hk.baoTri = e.target.checked; quietCmp = true; openDetail(S.open, true); quietCmp = false;
+});
 
 /* ---------- tải dữ liệu ---------- */
 // Bản quét tự động lúc 10:00 hằng ngày (data/<id>_<gid>.json, do GitHub Actions tạo); live=true thì đọc thẳng Google Sheet.
@@ -1039,6 +1131,9 @@ document.addEventListener('click', e => {
   const pm15Btn = t.closest('[data-pm15]'); if (pm15Btn && S.open) { S.cmp15Key = pm15Btn.dataset.pm15; openDetail(S.open, true); return; }
   const dstBtn = t.closest('[data-dst]'); if (dstBtn && S.open) { S.cmpDstKey = dstBtn.dataset.dst; openDetail(S.open, true); return; }
   const feeBtn = t.closest('[data-fee]'); if (feeBtn && S.open) { S.cmp15Fee = feeBtn.dataset.fee; openDetail(S.open, true); return; }
+  const upBtn = t.closest('[data-up]'); if (upBtn && S.open) { S.upMode = upBtn.dataset.up; quietCmp = true; openDetail(S.open, true); quietCmp = false; return; }
+  const hktBtn = t.closest('[data-hkt]'); if (hktBtn && S.open) { S.hk.type = hktBtn.dataset.hkt; quietCmp = true; openDetail(S.open, true); quietCmp = false; return; }
+  const hkcBtn = t.closest('[data-hkc]'); if (hkcBtn && S.open) { S.hk.color = hkcBtn.dataset.hkc; quietCmp = true; openDetail(S.open, true); quietCmp = false; return; }
   const swBtn = t.closest('[data-swap]'); if (swBtn && S.open) { S.cmpModel = swBtn.dataset.smodel || ''; S.cmp15Key = ''; S.cmpDstKey = ''; S.cmpPickOpen = false; openDetail(swBtn.dataset.swap, true, true); return; }
   if (t.id === 'dlgClose' || t === $('dlg')) closeDlg();
 });
