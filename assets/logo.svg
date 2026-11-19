@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" fill="none">
+  <defs>
+    <!-- Soft ambient drop shadow -->
+    <filter id="tagShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#14326e" flood-opacity="0.18"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#007aff" flood-opacity="0.12"/>
+    </filter>
+    <!-- Glow & depth for the sapphire wave -->
+    <filter id="waveGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#0055d4" flood-opacity="0.38"/>
+    </filter>
+    <!-- Crystal translucent glass body -->
+    <linearGradient id="glassBody" x1="100" y1="145" x2="410" y2="365" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.52"/>
+      <stop offset="35%" stop-color="#d8ebff" stop-opacity="0.24"/>
+      <stop offset="72%" stop-color="#b8d9ff" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#ebd6ff" stop-opacity="0.30"/>
+    </linearGradient>
+    <!-- Diagonal specular glass sheen -->
+    <linearGradient id="glassSheen" x1="115" y1="150" x2="285" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.58"/>
+      <stop offset="42%" stop-color="#ffffff" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#7ec3ff" stop-opacity="0.06"/>
+    </linearGradient>
+    <!-- Outer crisp refractive glass edge -->
+    <linearGradient id="rimOuter" x1="105" y1="150" x2="410" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"/>
+      <stop offset="28%" stop-color="#8ec8ff" stop-opacity="0.92"/>
+      <stop offset="65%" stop-color="#5ca8ff" stop-opacity="0.82"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.95"/>
+    </linearGradient>
+    <!-- Inner glass thickness bevel -->
+    <linearGradient id="rimInner" x1="120" y1="355" x2="395" y2="155" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#66b0ff" stop-opacity="0.48"/>
+      <stop offset="50%" stop-color="#c6a8ff" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.80"/>
+    </linearGradient>
+    <!-- Sapphire blue liquid glass trend ribbon -->
+    <linearGradient id="waveGrad" x1="146" y1="266" x2="306" y2="238" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0052d9"/>
+      <stop offset="50%" stop-color="#0a84ff"/>
+      <stop offset="100%" stop-color="#33a3ff"/>
+    </linearGradient>
+    <!-- Specular core inside the blue ribbon -->
+    <linearGradient id="waveSpec" x1="148" y1="230" x2="304" y2="275" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.72"/>
+      <stop offset="50%" stop-color="#b5e3ff" stop-opacity="0.40"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.68"/>
+    </linearGradient>
+    <!-- Tag silhouette -->
+    <path id="tagShape" d="M 142 154 L 314 154 C 330 154 344 160 356 171 L 399 212 C 419 231 419 281 399 300 L 356 341 C 344 352 330 358 314 358 L 142 358 C 118 358 100 340 100 316 L 100 196 C 100 172 118 154 142 154 Z"/>
+    <!-- Cutout hole mask -->
+    <mask id="tagMask">
+      <rect width="512" height="512" fill="#000"/>
+      <use href="#tagShape" fill="#fff"/>
+      <circle cx="358" cy="256" r="23" fill="#000"/>
+    </mask>
+  </defs>
+
+  <g transform="translate(256 256) scale(1.1) rotate(-45) translate(-256 -256)" filter="url(#tagShadow)">
+    <!-- Main translucent Liquid Glass tag body -->
+    <g mask="url(#tagMask)">
+      <use href="#tagShape" fill="url(#glassBody)"/>
+      <use href="#tagShape" fill="url(#glassSheen)"/>
+      <use href="#tagShape" stroke="url(#rimInner)" stroke-width="11"/>
+    </g>
+
+    <!-- Crisp outer refractive border -->
+    <use href="#tagShape" stroke="url(#rimOuter)" stroke-width="4"/>
+
+    <!-- Cutout hole 3D glass thickness rim -->
+    <circle cx="358" cy="256" r="27" stroke="#7ec3ff" stroke-opacity="0.48" stroke-width="5.5"/>
+    <circle cx="358" cy="256" r="23" stroke="url(#rimOuter)" stroke-width="3.5"/>
+
+    <!-- Smooth sapphire-blue price-trend wave -->
+    <g filter="url(#waveGlow)">
+      <path d="M 146 266 C 172 230, 198 230, 222 256 C 246 282, 276 280, 304 238"
+            stroke="url(#waveGrad)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 146 261 C 172 225, 198 225, 222 251 C 246 277, 276 275, 304 233"
+            stroke="url(#waveSpec)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+</svg>

@@ -6,6 +6,9 @@
 <meta name="color-scheme" content="light dark">
 <script>try{const t=localStorage.getItem('theme'),g=localStorage.getItem('tint');if(t)document.documentElement.dataset.theme=t;if(g)document.documentElement.style.setProperty('--tint',g)}catch{}</script>
 <title>Theo dõi giá</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 <style>
 /* Liquid Glass (iOS 26/27): kính mờ trên nền màu, viền sáng phía trên + viền tối mảnh, chuyển động lò xo */
 :root{color-scheme:light;--tint:.35;interpolate-size:allow-keywords;
@@ -64,6 +67,10 @@ button,summary,.mv,#track tbody tr,.chip,.cmp15-pill{touch-action:manipulation}
 .top::after,.seg::after{z-index:2;background:linear-gradient(180deg,var(--sheen-t) 0%,transparent 28%,transparent 74%,var(--sheen-b) 100%);box-shadow:inset 0 0 10px var(--rim)}
 .scrolled .top{--bar-a:calc(.22 + var(--tint)*.26)}
 .scrolled h1{transform:scale(.72)}
+.brand{min-width:0}
+.brand-row{display:flex;align-items:center;gap:10px}
+.brand-logo{width:34px;height:34px;padding:4px;border-radius:11px;flex-shrink:0;display:block;background:rgb(var(--g)/.62);border:1px solid var(--brd);box-shadow:inset 0 1px 0 var(--spec),0 2px 8px rgba(20,30,60,.1);transition:transform .34s var(--ios)}
+.scrolled .brand-logo{transform:scale(.82)}
 .acts{display:flex;gap:8px;align-items:center}
 .upd{margin-top:2px;transition:opacity .22s ease}
 .scrolled .upd{opacity:.78}
@@ -207,6 +214,8 @@ details.raw summary{cursor:pointer;font-weight:600;margin:16px 0 8px}
 main{padding:0 12px calc(96px + env(safe-area-inset-bottom))}
 .top{top:max(8px,env(safe-area-inset-top));margin:8px 0 12px;padding:12px 14px;border-radius:24px}
 .top{flex-wrap:nowrap;align-items:flex-start}
+.brand-row{gap:8px}
+.brand-logo{width:30px;height:30px;padding:3px;border-radius:9px}
 h1{font-size:26px} .scrolled h1{transform:scale(.74)}
 #refresh{width:38px;height:38px;padding:0;font-size:0;display:inline-grid;place-items:center}
 #refresh::before{content:"⟳";font-size:19px}
@@ -239,8 +248,13 @@ dialog.closing{transform:translate3d(0,100%,0);opacity:1;transition:transform .2
 <body>
 <main>
   <header class="top">
-    <div><h1 id="title">Theo dõi giá</h1>
-      <div class="upd sub" id="status">Đang tải…</div></div>
+    <div class="brand">
+      <div class="brand-row">
+        <img class="brand-logo" src="assets/logo.svg" alt="" width="34" height="34" decoding="async">
+        <h1 id="title">Theo dõi giá</h1>
+      </div>
+      <div class="upd sub" id="status">Đang tải…</div>
+    </div>
     <div class="acts">
       <div class="seg" id="range" role="group" aria-label="Khoảng thời gian"></div>
       <button type="button" class="btn tint" id="refresh">⟳ Cập nhật ngay</button>
