@@ -847,6 +847,11 @@ function buildCmpState(targetItem) {
   }
   const tCap = capStr(targetItem.label);
   let pickSrc = srcVariants.find(x => x.key === S.cmp15Key);
+  if (!pickSrc && srcModel?.is15Pm && srcVariants.length) {
+    // 15PM mặc định: dung lượng rẻ nhất, bản màu Xám (Xám = Trắng cùng giá thì chung một mức)
+    const low = srcVariants.filter(x => x.capN === srcVariants[0].capN && x.itemKey !== targetItem.key);
+    pickSrc = low.find(x => x.colors?.includes('Xám')) || low.find(x => x.colors?.includes('Trắng')) || low[0];
+  }
   if (!pickSrc && tCap) pickSrc = srcVariants.find(x => x.cap === tCap && x.itemKey !== targetItem.key) || srcVariants.find(x => x.cap === tCap);
   if (!pickSrc) pickSrc = srcVariants.find(x => x.itemKey !== targetItem.key) || srcVariants[0] || null;
   const dstVariants = (targetItem.tiers?.length > 1) ? targetItem.tiers.map(t => ({
