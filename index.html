@@ -913,6 +913,7 @@ function openDetail(key, refresh, keepCmp) {
     const sgn = n => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
     const hkTime = S.hkData?.time ? fmtTime(new Date(S.hkData.time)) : '';
     const hkNote = S.hkData === false ? 'Đang tải giá Hoàng Kiên…'
+      : hkAuto && H.price !== '' && +H.price !== hkAuto.price ? `Đang dùng giá nhập tay ${fmt(+H.price)} — web HK (${COLOR_MAP[hkColor] || hkColor} · ${hkTier(H.pin)}) hiện ${fmt(hkAuto.price)} · cập nhật lúc ${hkTime}`
       : hkAuto ? `Giá web HK (${COLOR_MAP[hkColor] || hkColor} · ${hkTier(H.pin)}) tự điền: ${fmt(hkAuto.price)} · Giá HK cập nhật lúc ${hkTime}`
       : S.hkData?.items?.length ? `Không khớp giá HK cho ${cmp.srcModel.label} ${src.cap}${hkColor ? ' ' + hkColor : ''}${hkTier(H.pin) ? ' · ' + hkTier(H.pin) : ' (pin dưới 80%)'} — nhập tay giá web HK${hkTime ? ' · Giá HK cập nhật lúc ' + hkTime : ''}`
       : 'Chưa có dữ liệu giá Hoàng Kiên (data/hoangkien.json) — nhập tay giá web HK';
@@ -940,7 +941,7 @@ function openDetail(key, refresh, keepCmp) {
       <label class="ev up-in"><span>Pin cần bảo trì</span><input type="checkbox" id="hkBT"${H.baoTri ? ' checked' : ''}></label>
       <label class="ev up-in"><span>Trừ hình thức (nhập tay)</span>${numIn('hkDH', H.dHinh, '0')}</label>
       <label class="ev up-in"><span>Giá web HK${hkAuto && H.price === '' ? ' (tự điền)' : ''}</span>${numIn('hkPrice', H.price, hkAuto ? fmt(hkAuto.price) : 'Nhập giá')}</label>
-      <div class="sub" style="margin:4px 0 6px">${esc(hkNote)}</div>
+      <div class="sub" style="margin:4px 0 6px">${esc(hkNote)}${hkAuto && H.price !== '' && +H.price !== hkAuto.price ? ` <button type="button" class="cmp15-pill" data-hkreset>Dùng giá web HK</button>` : ''}</div>
       ${R ? `
       <div class="ev"><span>Giá web HK × ${Math.round(R.hk.r * 100)}%</span><span class="n">${fmt(R.hk.gross)}</span></div>
       ${R.hk.K ? `<div class="ev"><span>Trừ máy dưới 10 triệu</span><span class="n" style="color:var(--down)">−${fmt(R.hk.K)}</span></div>` : ''}
@@ -1145,7 +1146,8 @@ document.addEventListener('click', e => {
   const feeBtn = t.closest('[data-fee]'); if (feeBtn && S.open) { S.cmp15Fee = feeBtn.dataset.fee; openDetail(S.open, true); return; }
   const upBtn = t.closest('[data-up]'); if (upBtn && S.open) { S.upMode = upBtn.dataset.up; quietCmp = true; openDetail(S.open, true); quietCmp = false; return; }
   const hktBtn = t.closest('[data-hkt]'); if (hktBtn && S.open) { S.hk.type = hktBtn.dataset.hkt; quietCmp = true; openDetail(S.open, true); quietCmp = false; return; }
-  const hkcBtn = t.closest('[data-hkc]'); if (hkcBtn && S.open) { S.hk.color = hkcBtn.dataset.hkc; quietCmp = true; openDetail(S.open, true); quietCmp = false; return; }
+  const hkcBtn = t.closest('[data-hkc]'); if (t.closest('[data-hkreset]') && S.open) { S.hk.price = ''; quietCmp = true; openDetail(S.open, true); quietCmp = false; return; }
+  if (hkcBtn && S.open) { S.hk.color = hkcBtn.dataset.hkc; S.hk.price = ''; quietCmp = true; openDetail(S.open, true); quietCmp = false; return; }
   const swBtn = t.closest('[data-swap]'); if (swBtn && S.open) { S.cmpModel = swBtn.dataset.smodel || ''; S.cmp15Key = ''; S.cmpDstKey = ''; S.cmpPickOpen = false; openDetail(swBtn.dataset.swap, true, true); return; }
   if (t.id === 'dlgClose' || t === $('dlg')) closeDlg();
 });
