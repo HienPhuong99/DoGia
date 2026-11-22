@@ -1,0 +1,13 @@
+{
+ "name": "Theo dõi giá",
+ "short_name": "Giá iPhone",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#e8edf6",
+ "theme_color": "#e8edf6",
+ "icons": [
+  { "src": "assets/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+  { "src": "assets/logo-icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+ ]
+}
