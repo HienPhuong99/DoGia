@@ -956,6 +956,7 @@ function openDetail(key, refresh, keepCmp) {
       <div class="up-cmp">
         <div class="ev h"><span></span><span>PA1: TAM300</span><span>PA2: HK + TAM300</span></div>
         <div class="ev"><span>Giá ${esc(dstLabel)}</span><span class="n">${fmt(dstV)}</span><span class="n">${fmt(dstV)}</span></div>
+        <div class="ev"><span>Giá web HK${H.price !== '' ? ' (nhập tay)' : ' (tự điền)'} × ${Math.round(R.hk.r * 100)}%</span><span class="n">—</span><span class="n">${fmt(O_HK)}</span></div>
         <div class="ev"><span>Thu máy cũ</span><span class="n" style="color:var(--down)">−${fmt(src.v)}</span><span class="n" style="color:var(--down)">−${fmt(R.hk.thu)}</span></div>
         <div class="ev"><span>Phí dịch vụ TAM300</span><span class="n">+${rng2(feeMin, feeMax)}</span><span class="n">—</span></div>
         ${H.dT ? `<div class="ev"><span>Trừ tình trạng (TAM300)</span><span class="n">+${fmt(H.dT)}</span><span class="n">—</span></div>` : ''}
