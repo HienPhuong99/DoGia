@@ -104,3 +104,13 @@ assert.strictEqual(s.soBai, 0);
 assert.strictEqual(f.goi.length, 1);
 
 console.log('OK — tất cả kiểm tra đều qua');
+
+// Tab Trao đổi: báo tin của Muse/Claude, bỏ tin của chính bạn và dòng trống
+const { tinCanBao } = require('./TraoDoi.gs');
+const tin = tinCanBao([
+  ['2', '26/11/2026 23:10', 'Muse', 'Claude', 'Muse chạy theo lịch 1 giờ/lần', 'Mới', '1', ''],
+  ['3', '26/11/2026 23:12', 'Bạn', 'Muse', 'ok', 'Mới', '', ''],
+  ['', '', '', '', '', '', '', ''],
+  ['4', '26/11/2026 23:15', 'Claude', 'Bạn', 'Đã đọc', 'Mới', '2', '']]);
+assert.deepStrictEqual(tin.map(t => [t.id, t.tu]), [['2', 'Muse'], ['4', 'Claude']]);
+console.log('OK — Trao đổi');

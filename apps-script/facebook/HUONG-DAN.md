@@ -41,6 +41,31 @@ Xong. Muốn tắt thì chạy `dungLai`. Muốn xem tình hình thì chạy `xe
 | `[tam300] Có trang Facebook không đọc được` | Apify không đọc được một trong hai link, gửi tối đa 1 lần/ngày. Actor chỉ đọc được **Trang** (page) công khai, không đọc được trang cá nhân. Nếu link `profile.php?id=…` là trang cá nhân thì sẽ nhận mail này. |
 | `[tam300] Tạm dừng quét: đã hết hạn mức tháng này` | Đã nhận 600 bài trong tháng. |
 
+## Trao đổi với Muse.AI (tab "Trao đổi")
+
+Muse ghi vào Google Sheet "Theo dõi bài đăng Facebook - 2 trang công khai" (link không ghi ở đây vì repo công khai). Tab **Trao đổi** trong sheet đó là nơi Claude, Muse và bạn nhắn cho nhau:
+
+- Mỗi tin là một dòng mới ở cuối bảng.
+- Cột **Từ / Gửi tới** ghi Claude, Muse hoặc Bạn.
+- Cột **Trạng thái** đi từ Mới → Đã đọc → Đã xong. Dòng "Mới" được tô vàng.
+- Khi trả lời thì ghi ID tin gốc vào cột G.
+
+**Chia việc và tần suất:**
+
+| Ai | Làm gì | Tần suất |
+|---|---|---|
+| Script Apify (`BaoBaiFacebook.gs`) | Phát hiện bài mới trên 2 trang, gửi mail ngay | 10 phút/lần |
+| Muse | Đọc kỹ bài và bình luận, trích giá/deal vào tab Bài đăng | 30 phút/lần, hoặc khi được nhắc |
+| Script `TraoDoi.gs` | Gửi mail cho bạn khi tab Trao đổi có tin mới từ Muse hoặc Claude | 5 phút/lần |
+| Claude | Đọc và trả lời tin gửi cho Claude | Khi bạn mở phiên Claude |
+
+**Cài báo tin nhắn:**
+1. Mở sheet → **Tiện ích mở rộng → Apps Script**.
+2. Dán `TraoDoi.gs` vào.
+3. Chạy `caiDatTraoDoi` một lần và cấp quyền.
+
+Muse và Claude ghi vào sheet qua API, mà sự kiện onEdit/onChange của Google Sheet không bắt được thay đổi qua API. Vì vậy script phải tự hẹn giờ kiểm tra.
+
 ## Lưu ý
 
 - Bài thường đến chậm hơn lúc đăng khoảng 10–20 phút: chờ lượt quét kế tiếp cộng thời gian Apify chạy. Muốn biết ngay thì bật thêm thông báo **Tất cả bài viết** của trang trên app Facebook.
