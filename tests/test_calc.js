@@ -23,6 +23,14 @@ assert.strictEqual(C.calcThuHK(12000000, 'ngoai', 75, true, 200000).thu, 1020000
 assert.strictEqual(C.calcThuHK(20000000, 'het', 86, false).Dpin, 0);
 assert.strictEqual(C.calcThuHK(20000000, 'bh', 80, true).Dpin, 0);
 
+// Chọn tay trường hợp pin (nút như PA1): đè lên % pin
+assert.strictEqual(C.calcThuHK(20000000, 'het', 83, 'ok').Dpin, 0);
+assert.strictEqual(C.calcThuHK(20000000, 'het', 95, 'mid').Dpin, 500000);
+assert.strictEqual(C.calcThuHK(12000000, 'ngoai', 95, 'mid').Dpin, 300000);
+assert.strictEqual(C.calcThuHK(20000000, 'het', 95, 'bt').Dpin, 800000);
+assert.strictEqual(C.calcThuHK(20000000, 'het', 95, '').pinCase, 'ok');
+assert.strictEqual(C.calcThuHK(20000000, 'bh', 83, 'bt').pinCase, null);
+
 // Kết luận theo dấu khoảng chênh
 assert.strictEqual(C.compareUpgrade({ N: 21900000, O_T: 18400000, feeMin: 300000, feeMax: 500000, O_HK: 21100000, type: 'bh', pin: 100 }).verdict, 'pa2');
 assert.strictEqual(C.compareUpgrade({ N: 21900000, O_T: 18400000, feeMin: 300000, feeMax: 500000, O_HK: 20000000, type: 'het', pin: 83 }).verdict, 'pa1');

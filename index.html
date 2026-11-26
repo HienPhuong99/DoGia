@@ -329,7 +329,7 @@ const today = new Date(); today.setHours(0, 0, 0, 0);
 const S = { link: '', id: '', gid: '0', headers: [], rows: [], cols: [], role: {}, log: null,
   q: '', group: '', watchOnly: false, sortK: 'chg', sortDir: 1, rawJ: null, rawDir: 1, range: 30, watch: new Set(), items: [], open: null,
   cmp15Open: false, cmpPickOpen: false, cmpModel: '', cmp15Key: '', cmpDstKey: '', cmp15Fee: 'ext',
-  upMode: 'pa1', hk: { type: 'bh', pin: 90, baoTri: false, dHinh: 0, dT: 0, price: '', color: '', for: '' }, hkData: null,
+  upMode: 'pa1', hk: { type: 'bh', pin: 90, pinCase: '', dHinh: 0, dT: 0, price: '', color: '', for: '' }, hkData: null,
   tamLive: { map: new Map(), at: 0, loading: false, err: false } };
 
 /* ---------- tiện ích ---------- */
@@ -710,6 +710,11 @@ const TAM300_FEES = [
 /* <upgrade-calc> hàm thuần so sánh 2 phương án lên đời — tests/test_calc.js chạy khối này bằng node */
 const COLOR_MAP = { 'Xám': 'Titan tự nhiên', 'Vàng': 'Titan Sa Mạc', 'Đen': 'Titan Đen', 'Trắng': 'Titan Trắng', 'Xanh': 'Titan Xanh' };
 const HK_TYPES = [['bh', 'Máy HK còn BH', .90], ['het', 'Máy HK hết BH', .85], ['ngoai', 'Máy ngoài', .85]];
+// Trường hợp trừ pin theo hoangkien.com/mua-lai (chỉ máy hết BH / máy ngoài): [id, nhãn, trừ máy dưới 15tr, trừ máy từ 15tr]
+const HK_PIN_CASES = [['ok', 'Pin trên 85%', 0, 0], ['mid', 'Pin 80–85%', 3e5, 5e5], ['bt', 'Pin bảo trì', 6e5, 8e5]];
+// baoTri: true/'bt' | 'mid' | 'ok' = chọn tay; còn lại suy theo % pin
+const hkPinCase = (pin, baoTri) => baoTri === true ? 'bt' : HK_PIN_CASES.some(c => c[0] === baoTri) ? baoTri
+  : pin >= 80 && pin <= 85 ? 'mid' : 'ok';
 const hkKey = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/\s+/g, ' ').trim();
 // % pin -> tầng giá trên web HK; null = không có tầng tương ứng (nhập tay)
 const hkTier = pin => pin >= 100 ? 'Pin sạc ít 100%' : pin >= 90 ? 'Pin Zin 9X' : pin >= 80 ? 'Pin Zin 8X' : null;
@@ -728,12 +733,10 @@ function calcPA1(N, O, feeMin, feeMax, D = 0) {
 function calcThuHK(O, type, pin, baoTri, Dhinh = 0) {
   const r = (HK_TYPES.find(t => t[0] === type) || HK_TYPES[2])[2];
   const gross = Math.round(r * O), K = O < 10e6 ? 1e6 : 0;
-  let Dpin = 0;
-  if (type !== 'bh') {
-    if (baoTri) Dpin = O < 15e6 ? 6e5 : 8e5;
-    else if (pin >= 80 && pin <= 85) Dpin = O < 15e6 ? 3e5 : 5e5;
-  }
-  return { r, gross, K, Dpin, Dhinh, thu: gross - K - Dpin - Dhinh };
+  const pinCase = type === 'bh' ? null : hkPinCase(pin, baoTri);
+  const pc = pinCase && HK_PIN_CASES.find(c => c[0] === pinCase);
+  const Dpin = pc ? (O < 15e6 ? pc[2] : pc[3]) : 0;
+  return { r, gross, K, Dpin, pinCase, Dhinh, thu: gross - K - Dpin - Dhinh };
 }
 function compareUpgrade({ N, O_T, feeMin, feeMax, D_T = 0, O_HK, type, pin, baoTri, Dhinh = 0 }) {
   const pa1 = calcPA1(N, O_T, feeMin, feeMax, D_T), hk = calcThuHK(O_HK, type, pin, baoTri, Dhinh);
@@ -908,7 +911,7 @@ function openDetail(key, refresh, keepCmp) {
     const colors = src.colors || [], hkColor = colors.includes(H.color) ? H.color : colors[0] || '';
     const hkAuto = hkLookup(S.hkData?.items, cmp.srcModel.label, src.cap, hkColor, H.pin);
     const O_HK = H.price !== '' ? +H.price : hkAuto?.price ?? null;
-    const R = O_HK ? compareUpgrade({ N: dstV, O_T: src.v, feeMin, feeMax, D_T: H.dT, O_HK, type: H.type, pin: H.pin, baoTri: H.baoTri, Dhinh: H.dHinh }) : null;
+    const R = O_HK ? compareUpgrade({ N: dstV, O_T: src.v, feeMin, feeMax, D_T: H.dT, O_HK, type: H.type, pin: H.pin, baoTri: H.pinCase, Dhinh: H.dHinh }) : null;
     const rng2 = (a, b) => a === b ? fmt(a) : `${fmt(a)} – ${fmt(b)}`;
     const sgn = n => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
     const hkTime = S.hkData?.time ? fmtTime(new Date(S.hkData.time)) : '';
@@ -934,18 +937,22 @@ function openDetail(key, refresh, keepCmp) {
     const pa2Body = `
       <div class="cmp-lbl">Bán ${esc(src.label)} cho Hoàng Kiên:</div>
       <div class="cmp15-opts">${HK_TYPES.map(([id, lbl, r]) =>
-        `<button type="button" class="cmp15-pill" data-hkt="${id}" aria-pressed="${id === H.type}">${lbl} (${Math.round(r * 100)}%)</button>`).join('')}</div>
+        `<button type="button" class="cmp15-pill" data-hkt="${id}" aria-pressed="${id === H.type}">${lbl} (${Math.round(r * 100)}%${id === 'bh' ? '' : ', trừ pin'})</button>`).join('')}</div>
       ${colors.length > 1 ? `<div class="cmp15-opts">${colors.map(c =>
         `<button type="button" class="cmp15-pill" data-hkc="${esc(c)}" aria-pressed="${c === hkColor}">${esc(c)} → ${esc(COLOR_MAP[c] || c)}</button>`).join('')}</div>` : ''}
       <label class="ev up-in"><span>% pin máy cũ</span>${numIn('hkPin', H.pin, '90')}</label>
-      <label class="ev up-in"><span>Pin cần bảo trì</span><input type="checkbox" id="hkBT"${H.baoTri ? ' checked' : ''}></label>
+      ${H.type === 'bh' ? '<div class="sub" style="margin:2px 0 6px">Máy HK còn BH: không trừ pin.</div>' : `<div class="cmp-lbl">Tình trạng pin (trừ theo HK):</div>
+      <div class="cmp15-opts">${HK_PIN_CASES.map(([id, lbl, lo, hi]) => {
+        const amt = !lo ? 'không trừ' : O_HK ? '−' + fmtC(O_HK < 15e6 ? lo : hi) : `−${fmtC(lo)}/−${fmtC(hi)}`;
+        return `<button type="button" class="cmp15-pill" data-hkpin="${id}" aria-pressed="${id === hkPinCase(H.pin, H.pinCase)}">${lbl} (${amt})</button>`;
+      }).join('')}</div>`}
       <label class="ev up-in"><span>Trừ hình thức (nhập tay)</span>${numIn('hkDH', H.dHinh, '0')}</label>
       <label class="ev up-in"><span>Giá web HK${hkAuto && H.price === '' ? ' (tự điền)' : ''}</span>${numIn('hkPrice', H.price, hkAuto ? fmt(hkAuto.price) : 'Nhập giá')}</label>
       <div class="sub" style="margin:4px 0 6px">${esc(hkNote)}${hkAuto && H.price !== '' && +H.price !== hkAuto.price ? ` <button type="button" class="cmp15-pill" data-hkreset>Dùng giá web HK</button>` : ''}</div>
       ${R ? `
       <div class="ev"><span>Giá web HK × ${Math.round(R.hk.r * 100)}%</span><span class="n">${fmt(R.hk.gross)}</span></div>
       ${R.hk.K ? `<div class="ev"><span>Trừ máy dưới 10 triệu</span><span class="n" style="color:var(--down)">−${fmt(R.hk.K)}</span></div>` : ''}
-      ${R.hk.Dpin ? `<div class="ev"><span>Trừ pin${H.baoTri ? ' cần bảo trì' : ' 80–85%'}</span><span class="n" style="color:var(--down)">−${fmt(R.hk.Dpin)}</span></div>` : ''}
+      ${R.hk.Dpin ? `<div class="ev"><span>Trừ ${R.hk.pinCase === 'bt' ? 'pin bảo trì' : 'pin 80–85%'} (máy ${O_HK < 15e6 ? 'dưới' : 'từ'} 15tr)</span><span class="n" style="color:var(--down)">−${fmt(R.hk.Dpin)}</span></div>` : ''}
       ${R.hk.Dhinh ? `<div class="ev"><span>Trừ hình thức</span><span class="n" style="color:var(--down)">−${fmt(R.hk.Dhinh)}</span></div>` : ''}
       <div class="ev"><b>HK trả tiền mặt</b><b class="n">${fmt(R.hk.thu)}</b></div>
       <div class="ev"><span>Mua ${esc(dstLabel)} tại TAM300</span><span class="n">${fmt(dstV)}</span></div>
@@ -1035,12 +1042,9 @@ document.addEventListener('input', e => {
   const k = HK_INPUTS[e.target.id]; if (!k || !S.open) return;
   const el = e.target, digits = el.value.replace(/\D/g, ''), pos = el.selectionStart;
   S.hk[k] = k === 'price' ? digits : +digits || 0;
+  if (k === 'pin') S.hk.pinCase = ''; // gõ % pin thì trường hợp pin suy lại theo số
   quietCmp = true; openDetail(S.open, true); quietCmp = false;
   const again = $(el.id); again.focus(); try { again.setSelectionRange(pos, pos); } catch { }
-});
-document.addEventListener('change', e => {
-  if (e.target.id !== 'hkBT' || !S.open) return;
-  S.hk.baoTri = e.target.checked; quietCmp = true; openDetail(S.open, true); quietCmp = false;
 });
 
 /* ---------- tải dữ liệu ---------- */
@@ -1147,6 +1151,7 @@ document.addEventListener('click', e => {
   const feeBtn = t.closest('[data-fee]'); if (feeBtn && S.open) { S.cmp15Fee = feeBtn.dataset.fee; openDetail(S.open, true); return; }
   const upBtn = t.closest('[data-up]'); if (upBtn && S.open) { S.upMode = upBtn.dataset.up; quietCmp = true; openDetail(S.open, true); quietCmp = false; return; }
   const hktBtn = t.closest('[data-hkt]'); if (hktBtn && S.open) { S.hk.type = hktBtn.dataset.hkt; quietCmp = true; openDetail(S.open, true); quietCmp = false; return; }
+  const hkpBtn = t.closest('[data-hkpin]'); if (hkpBtn && S.open) { S.hk.pinCase = hkpBtn.dataset.hkpin; quietCmp = true; openDetail(S.open, true); quietCmp = false; return; }
   const hkcBtn = t.closest('[data-hkc]'); if (t.closest('[data-hkreset]') && S.open) { S.hk.price = ''; quietCmp = true; openDetail(S.open, true); quietCmp = false; return; }
   if (hkcBtn && S.open) { S.hk.color = hkcBtn.dataset.hkc; S.hk.price = ''; quietCmp = true; openDetail(S.open, true); quietCmp = false; return; }
   const swBtn = t.closest('[data-swap]'); if (swBtn && S.open) { S.cmpModel = swBtn.dataset.smodel || ''; S.cmp15Key = ''; S.cmpDstKey = ''; S.cmpPickOpen = false; openDetail(swBtn.dataset.swap, true, true); return; }
