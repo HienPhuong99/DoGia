@@ -1,5 +1,6 @@
 // Báo bài mới trên Facebook của tam300 qua email: Apps Script + Apify (actor apify/facebook-posts-scraper).
-// Bài nào mới cũng gửi mail, không lọc nội dung (bài thường không ghi model).
+// Bài nào mới cũng gửi mail, không lọc nội dung (bài thường không ghi model). Ngoài bài mới thì không gửi mail nào khác.
+// 22:00–08:00 (giờ VN) shop nghỉ nên không quét; 8:00 lượt đầu tự lấy bù bài từ lúc tối.
 // Mỗi lần chạy (10 phút/lần): đọc kết quả lượt quét trước → gửi mail bài mới → khởi động lượt quét kế tiếp.
 // Lượt quét chỉ lấy bài mới hơn bài cuối đã thấy (bộ lọc ngày), nên Apify chỉ tính tiền bài mới, không tính theo số lần quét.
 // Hướng dẫn cài: apps-script/facebook/HUONG-DAN.md
@@ -9,7 +10,6 @@ const PHUT = 10;             // chu kỳ kiểm tra (Apps Script chỉ cho 1, 5,
 const TRAN_THANG = 600;      // tối đa số bài/tháng ≈ 4,2 USD (7 USD/1.000 bài có bộ lọc ngày) — dưới 5 USD miễn phí
 const MAX_USD_LUOT = 0.2;    // một lượt quét không được tốn quá số này
 const QUA_LAU = 30 * 60e3;   // lượt quét chạy quá 30 phút thì dừng nó
-const BAO_LOI_SAU = 3;       // lỗi liên tiếp bao nhiêu lần thì gửi mail cảnh báo
 
 // Chạy 1 lần sau khi đã điền APIFY_TOKEN trong Cài đặt dự án → Thuộc tính tập lệnh.
 function caiDat() {
@@ -64,24 +64,14 @@ function buoc(s, now, goi) {
       if (r.status !== 'SUCCEEDED') throw new Error(`Lượt quét Apify kết thúc với trạng thái ${r.status}`);
       docKetQua(s, goi('get', `/datasets/${r.defaultDatasetId}/items?clean=true&format=json`), now, thu);
     }
-    if (s.soBai >= TRAN_THANG) {
-      if (!s.hetTran) {
-        s.hetTran = true;
-        thu.push({ subject: '[tam300] Tạm dừng quét: đã hết hạn mức tháng này',
-          htmlBody: `Tháng ${thang} đã nhận ${s.soBai} bài (tối đa ${TRAN_THANG}) nên script tạm dừng để không vượt gói miễn phí Apify. Sang tháng sau sẽ tự chạy lại.` });
-      }
-      return thu;
-    }
+    if (s.soBai >= TRAN_THANG) { s.hetTran = true; return thu; } // hết hạn mức tháng: dừng, sang tháng tự chạy lại
+    if (gioNghi(now)) return thu; // 22:00–08:00 shop nghỉ: không quét, 8:00 quét bù từ bài cuối đã thấy
     const input = { startUrls: TRANG.map(url => ({ url })), resultsLimit: 10, onlyPostsNewerThan: s.tuLuc };
     s.run = goi('post', `/acts/${ACTOR}/runs?maxTotalChargeUsd=${MAX_USD_LUOT}`, input).data.id;
   } catch (e) {
+    // Không gửi mail lỗi (chỉ mail khi có bài mới); xem lỗi bằng xemTrangThai hoặc Nhật ký thực thi.
     s.loiLienTiep = (s.loiLienTiep || 0) + 1;
     s.loiCuoi = e.message;
-    if (s.loiLienTiep >= BAO_LOI_SAU && !s.daBaoLoi) {
-      s.daBaoLoi = true;
-      thu.push({ subject: '[tam300] Quét Facebook đang bị lỗi',
-        htmlBody: `Đã lỗi ${s.loiLienTiep} lần liên tiếp, nên có thể đang sót bài.<br>Lỗi gần nhất: ${esc(e.message)}<br>Khi chạy lại được sẽ có mail báo.` });
-    }
   }
   return thu;
 }
@@ -95,15 +85,9 @@ function docKetQua(s, items, now, thu) {
   s.daThay = [...daThay, ...moi.map(i => String(i.postId))].slice(-300);
   const cuoi = Math.max(0, ...bai.map(i => Number(i.timestamp) || 0));
   if (cuoi) s.tuLuc = [s.tuLuc, isoUtc(cuoi * 1000 + 1000)].filter(Boolean).sort().pop(); // lượt sau chỉ lấy bài mới hơn
-  if (s.daBaoLoi) thu.push({ subject: '[tam300] Quét Facebook chạy lại bình thường', htmlBody: `Lỗi trước đó: ${esc(s.loiCuoi || '')}` });
-  Object.assign(s, { lanOkCuoi: new Date(now).toISOString(), loiLienTiep: 0, daBaoLoi: false, loiCuoi: '' });
-  // Trang không đọc được (vd. link là trang cá nhân): báo 1 lần mỗi ngày, không gửi dồn mỗi 10 phút.
-  const loiTrang = items.filter(i => i && !i.postId).map(i => i.error || i.errorDescription || JSON.stringify(i).slice(0, 200));
-  const ngay = new Date(now).toISOString().slice(0, 10);
-  if (loiTrang.length && s.ngayBaoTrangLoi !== ngay) {
-    s.ngayBaoTrangLoi = ngay;
-    thu.push({ subject: '[tam300] Có trang Facebook không đọc được', htmlBody: loiTrang.map(esc).join('<br>') });
-  }
+  Object.assign(s, { lanOkCuoi: new Date(now).toISOString(), loiLienTiep: 0, loiCuoi: '' });
+  // Trang không đọc được (vd. link là trang cá nhân): chỉ ghi lại, không gửi mail.
+  s.loiTrang = items.filter(i => i && !i.postId).map(i => String(i.error || i.errorDescription || JSON.stringify(i)).slice(0, 200));
 }
 
 function thuBaiMoi(moi) {
@@ -131,9 +115,12 @@ function api(token) {
   };
 }
 
+// Giờ Việt Nam (UTC+7) từ 22:00 đến trước 08:00.
+function gioNghi(now) { const h = (new Date(now).getUTCHours() + 7) % 24; return h >= 22 || h < 8; }
+
 function trangThai(p) { try { return JSON.parse(p.getProperty('TRANG_THAI')) || {}; } catch (e) { return {}; } }
 function nguoiNhan() { return PropertiesService.getScriptProperties().getProperty('EMAIL') || Session.getEffectiveUser().getEmail(); }
 function isoUtc(ms) { return new Date(ms).toISOString().slice(0, 19); } // Apify hiểu "2026-11-26T11:00:06" là giờ UTC
 function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
-if (typeof module !== 'undefined') module.exports = { buoc, thuBaiMoi, isoUtc, TRAN_THANG };
+if (typeof module !== 'undefined') module.exports = { buoc, thuBaiMoi, isoUtc, gioNghi, TRAN_THANG };

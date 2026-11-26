@@ -1,6 +1,6 @@
 // node apps-script/facebook/test.js — giả lập Apify để kiểm tra luồng báo bài mới
 const assert = require('assert');
-const { buoc, isoUtc, TRAN_THANG } = require('./BaoBaiFacebook.gs');
+const { buoc, isoUtc, gioNghi, TRAN_THANG } = require('./BaoBaiFacebook.gs');
 
 // Apify giả: ghi lại các lệnh gọi, trả lời theo bảng
 function giaLap(runs, datasets) {
@@ -17,7 +17,7 @@ function giaLap(runs, datasets) {
   f.goi = goi;
   return f;
 }
-const NOW = Date.parse('2026-11-26T12:00:00Z');
+const NOW = Date.parse('2026-11-26T12:00:00Z'); // 19:00 giờ VN
 const bai = (id, giay, text) => ({ postId: id, timestamp: giay, text, url: 'https://www.facebook.com/tam300/posts/' + id, user: { name: 'Tâm 300' } });
 
 // 1. Lần đầu: chưa có lượt nào → chỉ khởi động lượt quét với bộ lọc ngày
@@ -57,60 +57,53 @@ let run = s.run;
 f = giaLap({ [run]: { status: 'SUCCEEDED', defaultDatasetId: 'ds2' } }, { ds2: [bai('p2', t2, 'Bảo hành')] });
 assert.deepStrictEqual(buoc(s, NOW, f), []);
 
-// 5. Trang không đọc được → báo 1 lần trong ngày
+// 5. Trang không đọc được → chỉ ghi lại, không gửi mail
 run = s.run;
-const loiTrang = { ds3: [{ url: 'https://www.facebook.com/profile.php?id=61575673269886', error: 'Not a page' }] };
-f = giaLap({ [run]: { status: 'SUCCEEDED', defaultDatasetId: 'ds3' } }, loiTrang);
-thu = buoc(s, NOW, f);
-assert.strictEqual(thu.length, 1);
-assert.match(thu[0].subject, /không đọc được/);
-run = s.run;
-f = giaLap({ [run]: { status: 'SUCCEEDED', defaultDatasetId: 'ds3' } }, loiTrang);
-assert.deepStrictEqual(buoc(s, NOW + 600e3, f), []);
+f = giaLap({ [run]: { status: 'SUCCEEDED', defaultDatasetId: 'ds3' } },
+  { ds3: [{ url: 'https://www.facebook.com/profile.php?id=61575673269886', error: 'Not a page' }] });
+assert.deepStrictEqual(buoc(s, NOW, f), []);
+assert.deepStrictEqual(s.loiTrang, ['Not a page']);
 
-// 6. Lỗi liên tiếp → mail cảnh báo đúng 1 lần ở lần thứ 3; chạy lại được → mail báo đã ổn
+// 6. Lỗi liên tiếp → không gửi mail, chỉ đếm; chạy lại được thì xóa lỗi
 const hong = (m, p) => { if (p.startsWith('/acts')) throw new Error('Apify trả về HTTP 401: token sai'); return { data: { status: 'FAILED' } }; };
 s.run = null;
-assert.deepStrictEqual(buoc(s, NOW, hong), []);
-assert.deepStrictEqual(buoc(s, NOW, hong), []);
-thu = buoc(s, NOW, hong);
-assert.strictEqual(thu.length, 1);
-assert.match(thu[0].subject, /lỗi/);
-assert.deepStrictEqual(buoc(s, NOW, hong), []);
+for (let i = 0; i < 5; i++) assert.deepStrictEqual(buoc(s, NOW, hong), []);
+assert.strictEqual(s.loiLienTiep, 5);
+assert.match(s.loiCuoi, /401/);
 s.run = 'rOk';
 f = giaLap({ rOk: { status: 'SUCCEEDED', defaultDatasetId: 'ds4' } }, { ds4: [] });
-thu = buoc(s, NOW, f);
-assert.strictEqual(thu.length, 1);
-assert.match(thu[0].subject, /bình thường/);
+assert.deepStrictEqual(buoc(s, NOW, f), []);
 assert.strictEqual(s.loiLienTiep, 0);
 
-// 7. Lượt treo quá 30 phút → dừng nó, tính là lỗi, khởi động lượt mới ở lần sau
+// 7. Lượt treo quá 30 phút → dừng nó, tính là lỗi
 run = s.run;
 f = giaLap({ [run]: { status: 'RUNNING', startedAt: '2026-11-26T11:00:00Z' } }, {});
-buoc(s, NOW, f);
+assert.deepStrictEqual(buoc(s, NOW, f), []);
 assert.ok(f.goi.some(g => /abort$/.test(g[1])));
 assert.strictEqual(s.run, null);
 assert.strictEqual(s.loiLienTiep, 1);
 
-// 8. Hết hạn mức tháng → mail 1 lần, không khởi động lượt mới; sang tháng mới thì chạy lại
+// 8. Hết hạn mức tháng → không mail, không khởi động lượt mới; sang tháng mới thì chạy lại
 s = { tuLuc: '2026-11-26T11:50:00', thang: '2026-11', soBai: TRAN_THANG };
 f = giaLap({}, {});
-thu = buoc(s, NOW, f);
-assert.strictEqual(thu.length, 1);
-assert.strictEqual(f.goi.length, 0);
 assert.deepStrictEqual(buoc(s, NOW, f), []);
-buoc(s, Date.parse('2026-12-01T00:10:00Z'), f);
+assert.strictEqual(f.goi.length, 0);
+buoc(s, Date.parse('2026-12-01T03:10:00Z'), f); // 10:10 giờ VN
 assert.strictEqual(s.soBai, 0);
 assert.strictEqual(f.goi.length, 1);
 
-console.log('OK — tất cả kiểm tra đều qua');
+// 9. Giờ nghỉ 22:00–08:00 (giờ VN): không khởi động lượt mới, nhưng vẫn đọc và báo lượt đã chạy xong
+const vn = (gio) => Date.parse(`2026-11-27T${gio}:00+07:00`);
+assert.deepStrictEqual(['07:59', '08:00', '21:59', '22:00', '23:30', '02:00'].map(g => gioNghi(vn(g))), [true, false, false, true, true, true]);
+s = { tuLuc: '2026-11-27T14:00:00', run: 'rToi' };
+f = giaLap({ rToi: { status: 'SUCCEEDED', defaultDatasetId: 'ds5' } }, { ds5: [bai('p9', vn('21:58') / 1000, 'Bài cuối ngày')] });
+thu = buoc(s, vn('22:05'), f);
+assert.strictEqual(thu.length, 1);       // bài đăng lúc 21:58 vẫn được báo
+assert.strictEqual(s.run, null);         // nhưng không quét tiếp ban đêm
+assert.ok(!f.goi.some(g => g[1].startsWith('/acts')));
+f = giaLap({}, {});
+buoc(s, vn('08:00'), f);                 // 8:00 quét lại, lấy bù từ sau bài cuối đã thấy
+assert.strictEqual(f.goi.length, 1);
+assert.strictEqual(f.goi[0][2].onlyPostsNewerThan, isoUtc(vn('21:58') + 1000));
 
-// Tab Trao đổi: báo tin của Muse/Claude, bỏ tin của chính bạn và dòng trống
-const { tinCanBao } = require('./TraoDoi.gs');
-const tin = tinCanBao([
-  ['2', '26/11/2026 23:10', 'Muse', 'Claude', 'Muse chạy theo lịch 1 giờ/lần', 'Mới', '1', ''],
-  ['3', '26/11/2026 23:12', 'Bạn', 'Muse', 'ok', 'Mới', '', ''],
-  ['', '', '', '', '', '', '', ''],
-  ['4', '26/11/2026 23:15', 'Claude', 'Bạn', 'Đã đọc', 'Mới', '2', '']]);
-assert.deepStrictEqual(tin.map(t => [t.id, t.tu]), [['2', 'Muse'], ['4', 'Claude']]);
-console.log('OK — Trao đổi');
+console.log('OK — tất cả kiểm tra đều qua');

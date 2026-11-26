@@ -1,10 +1,10 @@
 # Báo bài mới trên Facebook tam300 qua email
 
-Script `BaoBaiFacebook.gs` chạy trên Google Apps Script, **10 phút kiểm tra một lần** hai trang:
+Script `BaoBaiFacebook.gs` chạy trên Google Apps Script, **10 phút kiểm tra một lần, từ 08:00 đến 22:00** (giờ VN; ban đêm shop nghỉ nên không quét, 8:00 lượt đầu tự lấy bù bài từ lúc tối) hai trang:
 - https://www.facebook.com/tam300
 - https://www.facebook.com/profile.php?id=61575673269886
 
-**Có bài mới là gửi mail**, không lọc nội dung vì bài thường không ghi model. Mail gồm chữ trong bài, giờ đăng, ảnh đầu tiên và link mở bài.
+**Có bài mới là gửi mail**, không lọc nội dung vì bài thường không ghi model. Mail gồm chữ trong bài, giờ đăng, ảnh đầu tiên và link mở bài. **Ngoài bài mới thì không gửi mail nào khác**, kể cả khi lỗi.
 
 Phần đọc Facebook do **Apify** (actor `apify/facebook-posts-scraper`) làm. Không cần AI, không cần Google Sheet.
 
@@ -13,7 +13,7 @@ Phần đọc Facebook do **Apify** (actor `apify/facebook-posts-scraper`) làm.
 - Apify tính **7 USD / 1.000 bài** khi có bộ lọc ngày. Gói miễn phí có 5 USD/tháng, tức khoảng 700 bài.
 - Mỗi lượt quét chỉ xin những bài **mới hơn bài cuối đã thấy**. Lượt nào không có bài mới thì không có bài nào để tính tiền, nên quét 10 phút/lần cũng không tốn hơn quét thưa.
 - Để chắc chắn không vượt gói miễn phí, script có hai chốt chặn:
-  - Mỗi tháng nhận tối đa **600 bài** (khoảng 4,2 USD). Hết hạn mức thì gửi mail báo, tạm dừng và sang tháng sau tự chạy lại.
+  - Mỗi tháng nhận tối đa **600 bài** (khoảng 4,2 USD). Hết hạn mức thì tạm dừng (không gửi mail) và sang tháng sau tự chạy lại.
   - Mỗi lượt quét tốn tối đa 0,2 USD.
 - **Sau ngày đầu tiên, nên vào Apify → Billing / Usage xem thử.** Giá trên lấy từ trang giới thiệu của actor. Nếu thấy lượt quét trống vẫn bị tính tiền thì đổi `PHUT` thành 30.
 
@@ -32,14 +32,15 @@ Phần đọc Facebook do **Apify** (actor `apify/facebook-posts-scraper`) làm.
 
 Xong. Muốn tắt thì chạy `dungLai`. Muốn xem tình hình thì chạy `xemTrangThai`, hoặc xem **Lần thực thi** bên trái.
 
-## Mail bạn có thể nhận
+## Mail bạn sẽ nhận
 
-| Tiêu đề | Nghĩa là |
-|---|---|
-| `[tam300] Bài mới: …` / `[tam300] 3 bài mới: …` | Có bài mới. Đây là mail chính. |
-| `[tam300] Quét Facebook đang bị lỗi` | Lỗi 3 lần liên tiếp, ví dụ token sai hoặc Facebook chặn. Mail chỉ gửi 1 lần, khi chạy lại được sẽ có mail "chạy lại bình thường". |
-| `[tam300] Có trang Facebook không đọc được` | Apify không đọc được một trong hai link, gửi tối đa 1 lần/ngày. Actor chỉ đọc được **Trang** (page) công khai, không đọc được trang cá nhân. Nếu link `profile.php?id=…` là trang cá nhân thì sẽ nhận mail này. |
-| `[tam300] Tạm dừng quét: đã hết hạn mức tháng này` | Đã nhận 600 bài trong tháng. |
+Chỉ một loại: `[tam300] Bài mới: …` hoặc `[tam300] 3 bài mới: …` khi có bài mới.
+
+Script không gửi mail khi lỗi, nên lâu không thấy mail mà nghi ngờ thì chạy `xemTrangThai`:
+- `loiLienTiep` / `loiCuoi`: số lần lỗi liên tiếp và lỗi gần nhất, ví dụ token sai hoặc Facebook chặn.
+- `loiTrang`: trang Apify không đọc được. Actor chỉ đọc được **Trang** (page) công khai, không đọc được trang cá nhân.
+- `hetTran: true`: đã nhận đủ 600 bài trong tháng nên đang tạm dừng.
+- `lanOkCuoi`: lần quét thành công gần nhất.
 
 ## Trao đổi với Muse.AI (tab "Trao đổi")
 
@@ -54,20 +55,14 @@ Muse ghi vào Google Sheet "Theo dõi bài đăng Facebook - 2 trang công khai"
 
 | Ai | Làm gì | Tần suất |
 |---|---|---|
-| Script Apify (`BaoBaiFacebook.gs`) | Phát hiện bài mới trên 2 trang, gửi mail ngay | 10 phút/lần |
-| Muse | Đọc kỹ bài và bình luận, trích giá/deal vào tab Bài đăng | 30 phút/lần, hoặc khi được nhắc |
-| Script `TraoDoi.gs` | Gửi mail cho bạn khi tab Trao đổi có tin mới từ Muse hoặc Claude | 5 phút/lần |
+| Script Apify (`BaoBaiFacebook.gs`) | Phát hiện bài mới trên 2 trang, gửi mail ngay | 10 phút/lần, 08:00–22:00 |
+| Muse | Đọc kỹ bài và bình luận, trích giá/deal vào tab Bài đăng | 30 phút/lần, 08:00–22:00 |
 | Claude | Đọc và trả lời tin gửi cho Claude | Khi bạn mở phiên Claude |
 
-**Cài báo tin nhắn:**
-1. Mở sheet → **Tiện ích mở rộng → Apps Script**.
-2. Dán `TraoDoi.gs` vào.
-3. Chạy `caiDatTraoDoi` một lần và cấp quyền.
-
-Muse và Claude ghi vào sheet qua API, mà sự kiện onEdit/onChange của Google Sheet không bắt được thay đổi qua API. Vì vậy script phải tự hẹn giờ kiểm tra.
+Tin nhắn trong tab Trao đổi **không gửi mail**. Bạn chỉ nhận mail khi có bài đăng mới; muốn xem tin nhắn thì mở tab, dòng "Mới" được tô vàng.
 
 ## Lưu ý
 
 - Bài thường đến chậm hơn lúc đăng khoảng 10–20 phút: chờ lượt quét kế tiếp cộng thời gian Apify chạy. Muốn biết ngay thì bật thêm thông báo **Tất cả bài viết** của trang trên app Facebook.
-- Tự động quét Facebook là trái điều khoản của Facebook. Apify có thể bị chặn tạm thời, nên thỉnh thoảng có thể sót bài hoặc nhận mail lỗi.
+- Tự động quét Facebook là trái điều khoản của Facebook. Apify có thể bị chặn tạm thời, nên thỉnh thoảng có thể sót bài; kiểm tra bằng `xemTrangThai`.
 - Kiểm tra trên máy: `node apps-script/facebook/test.js` (giả lập Apify, không gọi mạng).
