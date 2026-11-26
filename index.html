@@ -703,7 +703,8 @@ function renderRaw(rows) {
 }
 
 const TAM300_FEES = [
-  ['ext', 'Máy ngoài / hết BH (+300k–500k)', 300000, 500000],
+  // Máy ngoài: lên đời = giá bán − 500k (web ghi 300k–500k, cửa hàng báo 500k); bán lấy tiền mặt = giá bán − 1tr
+  ['ext', 'Máy ngoài / hết BH (−500k)', 500000, 500000],
   ['bh', 'TAM300 còn BH (+300k)', 300000, 300000],
   ['6m', 'Dùng 6 tháng (+150k–250k)', 150000, 250000],
 ];
@@ -933,7 +934,7 @@ function openDetail(key, refresh, keepCmp) {
       <label class="ev up-in"><span>Trừ tình trạng thực tế (nhập tay)</span>${numIn('hkDT', H.dT, '0')}</label>
       <div class="ev"><b>Tổng tiền bù dự kiến</b><span class="n cmp15-total">${payText}</span></div>
       ${diff < 0 && src.itemKey !== i.key ? `<div style="margin-top:8px"><button type="button" class="cmp15-pill" data-swap="${esc(src.itemKey)}" data-smodel="${esc(cmp.dstMeta.id)}">⇄ Đảo chiều: Từ ${esc(i.label)} lên ${esc(cmp.srcModel.label)}</button></div>` : ''}
-      <div class="more">Theo tam300.com/thu-mua: thu máy bằng 100% giá bán công khai; chưa gồm chênh lệch phụ phí pin hoặc ngoại hình thực tế.</div>`;
+      <div class="more">TAM300 máy ngoài: lên đời thu bằng giá bán − 500k; bán lấy tiền mặt thì giá bán − 1tr (không lợi bằng lên đời). Chưa gồm trừ pin chai, cấn móp, thay linh kiện — cửa hàng báo khi kiểm máy.</div>`;
     const pa2Body = `
       <div class="cmp-lbl">Bán ${esc(src.label)} cho Hoàng Kiên:</div>
       <div class="cmp15-opts">${HK_TYPES.map(([id, lbl, r]) =>

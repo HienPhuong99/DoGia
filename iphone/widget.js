@@ -33,7 +33,7 @@ async function load() {
   const H = JSON.parse(hk);
   const hkItem = C.hkLookup(H.items, 'iPhone 15 Pro Max', '256GB', src.color, 90);
   if (!hkItem) throw new Error('Thiếu giá Hoàng Kiên');
-  const r = C.compareUpgrade({ N, O_T: price(src.price), feeMin: 300000, feeMax: 500000, O_HK: hkItem.price, type: 'bh', pin: 90, baoTri: false });
+  const r = C.compareUpgrade({ N, O_T: price(src.price), feeMin: 500000, feeMax: 500000, O_HK: hkItem.price, type: 'bh', pin: 90, baoTri: false });
   const verdict = { pa2: 'Bán HK lợi hơn', pa1: 'Đổi TAM300 lợi hơn', hoa: 'Gần như hòa' }[r.verdict];
   return { N, O_T: price(src.price), color: src.color, O_HK: hkItem.price, r, verdict, hkTime: H.time };
 }
